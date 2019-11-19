@@ -5,10 +5,16 @@ import {
   Text,
   View,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  Platform,
+  Keyboard,
+  KeyboardAvoidingView,
+  YellowBox
 } from 'react-native';
 import firebase from "../../firebaseConfig.js";
+import {TouchableWithoutFeedback} from "react-native-web";
 
+YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Login extends Component {
   constructor(props) {
     super(props);
@@ -17,19 +23,33 @@ export default class Login extends Component {
       password: '',
       error: false,
       errorMessage: '',
-      isLoading: true
+      isLoading: true,
+      authenticated: false,
+      user: null
     }
   }
 
   componentDidMount() {
-    firebase.auth().onAuthStateChanged((user) => {
-      this.setState({
-        isLoading: false,
-        user,
-      });
-      this.props.navigation.navigate('Profile')
+    this.authFirebaseListener = firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({
+          authenticated: true,
+          isLoading: false,
+          user: user
+        });
+        this.props.navigation.navigate('Profile')
+      } else {
+        this.setState({
+          authenticated: false,
+          isLoading: false,
+        });
+      }
     });
   };
+
+  componentWillUnmount() {
+    this.authFirebaseListener && this.authFirebaseListener()
+  }
 
   handleLogin = () => {
     const {usernameOrEmail, password} = this.state;
@@ -46,64 +66,73 @@ export default class Login extends Component {
 
   render() {
     const {navigate} = this.props.navigation;
-    let {isLoading} = this.state;
+    let {isLoading, authenticated} = this.state;
     return (
-      <View>
-        {isLoading ?
-          <View style={styles.spinner}>
-            <ActivityIndicator size="large" color="black"/>
-            <Text>Loading Please Wait...</Text>
-          </View> :
-          <View style={styles.container}>
-            <Text style={styles.appTitle}>
-              Prescript.io
-            </Text>
-            <Text style={styles.appText}>
-              Your Prescription Management App
-            </Text>
-            <Text style={styles.pageTitle}>
-              Login
-            </Text>
-            <Text style={styles.appText}>Username/Email</Text>
-            <TextInput style={styles.textInput} onChangeText={text => this.setState({usernameOrEmail: text})}/>
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
+        <View style={styles.inner}>
+          {isLoading && !authenticated ?
+            <View style={styles.spinner}>
+              <ActivityIndicator size="large" color="black"/>
+              <Text>Loading Please Wait...</Text>
+            </View> :
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View>
+                <Text style={styles.appTitle}>
+                  Prescript.io
+                </Text>
+                <Text style={styles.appText}>
+                  Your Prescription Management App
+                </Text>
+                <Text style={styles.pageTitle}>
+                  Login
+                </Text>
+                <TextInput style={styles.textInput}
+                           placeholder="Email"
+                           onChangeText={text => this.setState({usernameOrEmail: text})}/>
 
-            <Text style={styles.appText}>Password</Text>
-            <TextInput style={styles.textInput} onChangeText={text => this.setState({password: text})}
-                       secureTextEntry={true}/>
+                <TextInput style={styles.textInput}
+                           placeholder="Password"
+                           onChangeText={text => this.setState({password: text})}
+                           secureTextEntry={true}/>
 
-            <TouchableOpacity onPress={this.handleLogin}>
-              <Text style={styles.loginButton}>
-                Login
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity onPress={this.handleLogin}>
+                  <Text style={styles.loginButton}>
+                    Login
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigate('Register')}>
-              <Text style={styles.registerButton}>
-                Don't have an account? Register Here
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigate('Register')}>
+                  <Text style={styles.registerButton}>
+                    Don't have an account? Register Here
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity>
-              <Text style={styles.registerButton}>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
-          </View>}
-      </View>
+                <TouchableOpacity>
+                  <Text style={styles.registerButton}>
+                    Forgot Password?
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>}
+        </View>
+      </KeyboardAvoidingView>
     )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1
+  },
+  inner: {
     padding: 20,
     textAlign: 'center',
-    justifyContent: 'center',
     textAlignVertical: "center",
-    alignItems: 'center'
+    alignItems: 'center',
   },
   spinner: {
     marginTop: 350,
+    marginBottom: 15,
     padding: 20,
     textAlign: 'center',
     justifyContent: 'center',
@@ -111,17 +140,20 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   appTitle: {
-    marginTop: 10,
+    marginTop: 15,
     fontSize: 30,
-    padding: 10
+    padding: 10,
+    textAlign: 'center',
   },
   pageTitle: {
     fontSize: 26,
-    padding: 10
+    padding: 10,
+    textAlign: 'center',
   },
   appText: {
     fontSize: 20,
-    padding: 10
+    padding: 10,
+    textAlign: 'center'
   },
   loginButton: {
     fontSize: 20,
@@ -140,10 +172,11 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   textInput: {
+    marginBottom: 10,
     fontSize: 20,
-    padding: 10,
+    padding: 5,
+    borderBottomWidth: 1,
     borderColor: 'grey',
-    borderWidth: 1,
     minWidth: 275,
     textAlign: 'center'
   },

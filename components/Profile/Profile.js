@@ -4,7 +4,6 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native'
@@ -51,19 +50,16 @@ export default class Profile extends Component {
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <View style={styles.inner}>
-          <Text style={styles.appText}>Profile</Text>
 
-          <Text style={styles.appText}>
-            Hi {name ? name : undefined}!
-          </Text>
+          {name ? <Text style={styles.appText}>Hi {name}!</Text> : undefined}
 
-          <Text style={styles.appText}>
-            Your current email is {email ? email : undefined}!
-          </Text>
+          <Text style={styles.appText}>Welcome to you profile.</Text>
 
-          <Text style={styles.appText}>
-            Your email {emailVerified ? 'is' : 'is not'} verified.
-          </Text>
+          <Text style={styles.appText}>Your details:</Text>
+
+          <Text style={styles.appText}>Your current email is {email ? email : undefined}</Text>
+
+          <Text style={styles.appText}>Your email {emailVerified ? 'is' : 'is not'} verified.</Text>
 
           <TouchableOpacity onPress={this.signOut}>
             <Text style={styles.changePasswordButton}>

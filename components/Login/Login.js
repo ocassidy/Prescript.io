@@ -9,18 +9,30 @@ import {
   Platform,
   Keyboard,
   KeyboardAvoidingView,
-  YellowBox
+  YellowBox, Alert
 } from 'react-native';
 import firebase from "../../firebaseConfig.js";
 import {TouchableWithoutFeedback} from "react-native-web";
+import {Formik} from "formik";
+import * as Yup from 'yup';
+import {ErrorMessage} from "../common/ErrorMessage";
+
+const LoginSchema = Yup.object().shape({
+  password: Yup.string()
+    .min(6, 'Password must have at least 6 characters')
+    .max(50, 'Password must not be more than 50 characters')
+    .required('Required'),
+  email: Yup.string()
+    .label('Email')
+    .email('Enter a valid email')
+    .required('Please enter a registered email'),
+});
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      usernameOrEmail: '',
-      password: '',
       error: false,
       errorMessage: '',
       isLoading: true,
@@ -51,11 +63,10 @@ export default class Login extends Component {
     this.authFirebaseListener && this.authFirebaseListener()
   }
 
-  handleLogin = () => {
-    const {usernameOrEmail, password} = this.state;
+  handleLogin = (values) => {
     firebase
       .auth()
-      .signInWithEmailAndPassword(usernameOrEmail.trim(), password.trim())
+      .signInWithEmailAndPassword(values.email.trim(), values.password.trim())
       .then(() => {
         this.props.navigation.navigate('Profile')
       })
@@ -69,52 +80,77 @@ export default class Login extends Component {
     let {isLoading, authenticated} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
-        <View style={styles.inner}>
-          {isLoading && !authenticated ?
-            <View style={styles.spinner}>
-              <ActivityIndicator size="large" color="black"/>
-              <Text>Loading Please Wait...</Text>
-            </View> :
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View>
-                <Text style={styles.appTitle}>
-                  Prescript.io
+        {isLoading && !authenticated ?
+          <View style={styles.spinner}>
+            <ActivityIndicator size="large" color="black"/>
+            <Text>Loading Please Wait...</Text>
+          </View> :
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.inner}>
+              <Text style={styles.appTitle}>
+                Prescript.io
+              </Text>
+              <Text style={styles.appText}>
+                Your Prescription Management App
+              </Text>
+              <Text style={styles.pageTitle}>
+                Login
+              </Text>
+              <Formik initialValues={{email: '', password: ''}}
+                      onSubmit={values => this.handleLogin(values)}
+                      validationSchema={LoginSchema}>
+                {({
+                    handleChange,
+                    values,
+                    handleSubmit,
+                    errors,
+                    isValid,
+                    touched,
+                    handleBlur,
+                    isSubmitting
+                  }) => (
+                  <View>
+                    <TextInput style={styles.textInput}
+                               placeholder="Email"
+                               onChangeText={handleChange('email')}
+                               onBlur={handleBlur('email')}
+                               value={values.email}
+                               maxLength={50}
+                    />
+                    <ErrorMessage errorValue={touched.email && errors.email}/>
+
+                    <TextInput style={styles.textInput}
+                               placeholder="Password"
+                               onChangeText={handleChange('password')}
+                               onBlur={handleBlur('password')}
+                               maxLength={24}
+                               value={values.password}
+                               secureTextEntry={true}
+                    />
+                    <ErrorMessage errorValue={touched.password && errors.password}/>
+
+                    <TouchableOpacity onPress={handleSubmit} disabled={!isValid || isSubmitting}>
+                      <Text style={styles.loginButton}>
+                        Login
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </Formik>
+
+              <TouchableOpacity onPress={() => navigate('Register')}>
+                <Text style={styles.registerButton}>
+                  Don't have an account? Register Here
                 </Text>
-                <Text style={styles.appText}>
-                  Your Prescription Management App
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => navigate('ResetPassword')}>
+                <Text style={styles.registerButton}>
+                  Forgot Password?
                 </Text>
-                <Text style={styles.pageTitle}>
-                  Login
-                </Text>
-                <TextInput style={styles.textInput}
-                           placeholder="Email"
-                           onChangeText={text => this.setState({usernameOrEmail: text})}/>
-
-                <TextInput style={styles.textInput}
-                           placeholder="Password"
-                           onChangeText={text => this.setState({password: text})}
-                           secureTextEntry={true}/>
-
-                <TouchableOpacity onPress={this.handleLogin}>
-                  <Text style={styles.loginButton}>
-                    Login
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => navigate('Register')}>
-                  <Text style={styles.registerButton}>
-                    Don't have an account? Register Here
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity>
-                  <Text style={styles.registerButton}>
-                    Forgot Password?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>}
-        </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>}
       </KeyboardAvoidingView>
     )
   }
@@ -172,12 +208,12 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   textInput: {
-    marginBottom: 10,
     fontSize: 20,
     padding: 5,
+    marginBottom: 10,
     borderBottomWidth: 1,
     borderColor: 'grey',
     minWidth: 275,
-    textAlign: 'center'
-  },
+    textAlign: 'left'
+  }
 });

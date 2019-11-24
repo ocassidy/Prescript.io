@@ -1,14 +1,21 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+  View,
+  Modal,
+  TouchableHighlight,
+  YellowBox
 } from 'react-native'
+import {
+  Text,
+  Button
+} from 'react-native-paper';
 import firebase from "../../firebaseConfig.js";
+import styles from '../themes/styles';
 
+
+YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Profile extends Component {
   constructor(props) {
     super(props);
@@ -19,7 +26,10 @@ export default class Profile extends Component {
       email: '',
       photoUrl: '',
       emailVerified: false,
-      uid: ''
+      uid: '',
+      address: '',
+      phoneNumber: '',
+      modalVisible: false,
     }
   }
 
@@ -27,7 +37,7 @@ export default class Profile extends Component {
     firebase.auth().signOut().then(() => {
       this.props.navigation.navigate('Login')
     }).catch(function (error) {
-      this.setState({errorMessage: error.message, error: true})
+      this.setState({ errorMessage: error.message, error: true })
     });
   };
 
@@ -45,43 +55,116 @@ export default class Profile extends Component {
     }
   }
 
+  componentDidUpdate() {
+    this.getUserData();
+  }
+
+  getUserData = () => {
+    const { uid } = this.state;
+
+    firebase.database().ref('users/' + uid)
+      .on('value', (snapshot) => {
+        console.log('snapshot.val()', snapshot.val());
+      },
+        (error) => {
+          console.log("Error:", error.code);
+        }
+      );
+  };
+
+  setModalVisible(visible) {
+    this.setState({ modalVisible: visible });
+  }
+
+  saveUserDetailsAddressAndPhoneNumber = () => {
+    const { uid, address, phoneNumber } = this.state;
+
+    firebase
+      .database()
+      .ref('users/' + uid)
+      .set({
+        address,
+        phoneNumber
+      })
+      .then(response => {
+        console.log('database response ', response);
+      }).catch((error) => {
+        console.log('error ', error);
+      });
+  };
+
   render() {
-    const {name, email, photoUrl, emailVerified} = this.state;
+    const { theme } = this.props;
+    const { name, email, photoUrl, emailVerified, address, phoneNumber } = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <View style={styles.inner}>
+          {name ? <Text style={styles.appText} theme={theme}>Hi {name}!</Text> : undefined}
+          <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
+          <Text style={styles.appText} theme={theme}>Your details:</Text>
+          <Text style={styles.appText} theme={theme}>Your current email is {email ? email : undefined}</Text>
+          <Text style={styles.appText} theme={theme}>Your email {emailVerified ? 'is' : 'is not'} verified.</Text>
+          <Text style={styles.appText} theme={theme}>
+            Your address {address ? 'is' : 'is not set'} {address ? address : undefined}.
+          </Text>
 
-          {name ? <Text style={styles.appText}>Hi {name}!</Text> : undefined}
+          <Text style={styles.appText} theme={theme}>
+            Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : undefined}.
+          </Text>
 
-          <Text style={styles.appText}>Welcome to you profile.</Text>
+          {
+            !address || !phoneNumber ?
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
+                this.setModalVisible(true);
+              }}>
+                Add An {!address ? 'Address' : undefined} and {!phoneNumber ? 'Phone Number' : undefined}?
+              </Button>
+              : undefined
+          }
 
-          <Text style={styles.appText}>Your details:</Text>
+          {this.state.modalVisible
+            ? <Modal
+              animationType="fade"
+              transparent={false}
+              visible={this.state.modalVisible}
+              onRequestClose={() => {
+                Alert.alert('Modal has been closed.');
+              }}>
+              <View style={styles.inner}>
+                <View>
+                  <Text style={styles.appText}>Hello World!</Text>
 
-          <Text style={styles.appText}>Your current email is {email ? email : undefined}</Text>
-
-          <Text style={styles.appText}>Your email {emailVerified ? 'is' : 'is not'} verified.</Text>
-
-          <TouchableOpacity onPress={this.signOut}>
-            <Text style={styles.changePasswordButton}>
-              Change Password
-            </Text>
-          </TouchableOpacity>
+                  <TouchableHighlight
+                    onPress={() => {
+                      this.setModalVisible(!this.state.modalVisible);
+                    }}>
+                    <Text style={styles.appText}>Hide Modal</Text>
+                  </TouchableHighlight>
+                </View>
+              </View>
+            </Modal>
+            : undefined}
 
           <View style={styles.logoutDeleteAccountRow}>
             <View>
-              <TouchableOpacity onPress={this.signOut}>
-                <Text style={styles.logoutButton}>
-                  Logout
-                </Text>
-              </TouchableOpacity>
+              <Button style={styles.buttonSpacing} theme={theme} onPress={this.signOut}>
+                Logout
+              </Button>
             </View>
 
+            <Button style={styles.buttonSpacing} theme={theme} onPress={this.signOut}>
+              Change Password
+            </Button>
+
             <View>
-              <TouchableOpacity onPress={this.signOut}>
-                <Text style={styles.deleteAccountButton}>
-                  Delete Account
-                </Text>
-              </TouchableOpacity>
+              <Button style={styles.buttonSpacing}
+                theme={theme}
+                onPress={this.signOut}
+                mode="contained"
+                color={'red'}
+                labelStyle={styles.buttonTextColour}>
+                Delete Account
+              </Button>
             </View>
           </View>
         </View>
@@ -89,65 +172,3 @@ export default class Profile extends Component {
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  inner: {
-    padding: 20,
-    textAlign: 'center',
-    textAlignVertical: "center",
-    alignItems: 'center',
-  },
-  appTitle: {
-    marginTop: 10,
-    fontSize: 30,
-    padding: 10
-  },
-  pageTitle: {
-    fontSize: 26,
-    padding: 10
-  },
-  appText: {
-    fontSize: 18,
-    padding: 5
-  },
-  changePasswordButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#ffcb1d',
-    minWidth: 100,
-    textAlign: 'center'
-  },
-  logoutButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#44a2ff',
-    minWidth: 100,
-    textAlign: 'center'
-  },
-  deleteAccountButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#ff142b',
-    textAlign: 'center'
-  },
-  textInput: {
-    fontSize: 20,
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: 'grey',
-    minWidth: 275,
-    textAlign: 'center'
-  },
-  logoutDeleteAccountRow: {
-    flexDirection: 'row'
-  }
-});

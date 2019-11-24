@@ -1,21 +1,24 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
   View,
-  TextInput,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
   Platform,
   Keyboard,
   KeyboardAvoidingView,
-  YellowBox, Alert
+  YellowBox,
 } from 'react-native';
 import firebase from "../../firebaseConfig.js";
-import {TouchableWithoutFeedback} from "react-native-web";
-import {Formik} from "formik";
+import { Formik } from "formik";
 import * as Yup from 'yup';
-import {ErrorMessage} from "../common/ErrorMessage";
+import { ErrorMessage } from "../common/ErrorMessage";
+import {
+  ActivityIndicator,
+  Button,
+  Text,
+  TextInput
+} from 'react-native-paper';
+import { NavigationActions, StackActions } from 'react-navigation'
+import styles from '../themes/styles';
 
 const LoginSchema = Yup.object().shape({
   password: Yup.string()
@@ -42,6 +45,8 @@ export default class Login extends Component {
   }
 
   componentDidMount() {
+    this.props.navigation.dispatch(this.resetStack);
+
     this.authFirebaseListener = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.setState({
@@ -63,6 +68,22 @@ export default class Login extends Component {
     this.authFirebaseListener && this.authFirebaseListener()
   }
 
+  resetStack = () => {
+    this.props
+      .navigation
+      .dispatch(StackActions.reset({
+        index: 0,
+        actions: [
+          NavigationActions.navigate({
+            routeName: 'Profile',
+            routeName: 'Register',
+            routeName: 'ResetPassword'
+          }),
+        ],
+        key: null
+      }))
+  }
+
   handleLogin = (values) => {
     firebase
       .auth()
@@ -71,149 +92,82 @@ export default class Login extends Component {
         this.props.navigation.navigate('Profile')
       })
       .catch((error) => {
-        this.setState({errorMessage: error.message, error: true})
+        this.setState({ errorMessage: error.message, error: true })
       });
   };
 
   render() {
-    const {navigate} = this.props.navigation;
-    let {isLoading, authenticated} = this.state;
+    const { navigate } = this.props.navigation;
+    const { theme } = this.props;
+    const { isLoading, authenticated } = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         {isLoading && !authenticated ?
           <View style={styles.spinner}>
-            <ActivityIndicator size="large" color="black"/>
+            <ActivityIndicator size="large" color="black" />
             <Text>Loading Please Wait...</Text>
           </View> :
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.inner}>
-              <Text style={styles.appTitle}>
-                Prescript.io
-              </Text>
-              <Text style={styles.appText}>
-                Your Prescription Management App
-              </Text>
-              <Text style={styles.pageTitle}>
-                Login
-              </Text>
-              <Formik initialValues={{email: '', password: ''}}
-                      onSubmit={values => this.handleLogin(values)}
-                      validationSchema={LoginSchema}>
+              <Text style={styles.appTitle} theme={theme}>Prescript.io</Text>
+              <Text style={styles.appText} theme={theme}>Your Prescription Management App </Text>
+              <Text style={styles.pageTitle} theme={theme}>Login</Text>
+              <Formik initialValues={{ email: '', password: '' }}
+                onSubmit={values => this.handleLogin(values)}
+                validationSchema={LoginSchema}>
                 {({
-                    handleChange,
-                    values,
-                    handleSubmit,
-                    errors,
-                    isValid,
-                    touched,
-                    handleBlur,
-                    isSubmitting
-                  }) => (
-                  <View>
-                    <TextInput style={styles.textInput}
-                               placeholder="Email"
-                               onChangeText={handleChange('email')}
-                               onBlur={handleBlur('email')}
-                               value={values.email}
-                               maxLength={50}
-                    />
-                    <ErrorMessage errorValue={touched.email && errors.email}/>
+                  handleChange,
+                  values,
+                  handleSubmit,
+                  errors,
+                  isValid,
+                  touched,
+                  handleBlur,
+                  isSubmitting
+                }) => (
+                    <View>
+                      <TextInput
+                        theme={theme}
+                        placeholder="Email"
+                        onChangeText={handleChange('email')}
+                        onBlur={handleBlur('email')}
+                        value={values.email}
+                        mode='outlined'
+                      />
+                      <ErrorMessage errorValue={touched.email && errors.email} />
 
-                    <TextInput style={styles.textInput}
-                               placeholder="Password"
-                               onChangeText={handleChange('password')}
-                               onBlur={handleBlur('password')}
-                               maxLength={24}
-                               value={values.password}
-                               secureTextEntry={true}
-                    />
-                    <ErrorMessage errorValue={touched.password && errors.password}/>
+                      <TextInput
+                        theme={theme}
+                        placeholder="Password"
+                        onChangeText={handleChange('password')}
+                        onBlur={handleBlur('password')}
+                        maxLength={24}
+                        value={values.password}
+                        secureTextEntry={true}
+                        mode='outlined'
+                      />
+                      <ErrorMessage errorValue={touched.password && errors.password} />
 
-                    <TouchableOpacity onPress={handleSubmit} disabled={!isValid || isSubmitting}>
-                      <Text style={styles.loginButton}>
+                      <Button theme={theme} onPress={handleSubmit}
+                        disabled={!isValid || isSubmitting}
+                        mode="contained"
+                        labelStyle={styles.buttonTextColour}>
                         Login
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                      </Button>
+                    </View>
+                  )}
               </Formik>
 
-              <TouchableOpacity onPress={() => navigate('Register')}>
-                <Text style={styles.registerButton}>
-                  Don't have an account? Register Here
-                </Text>
-              </TouchableOpacity>
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Register')}>
+                Don't have an account? Register Here
+              </Button>
 
-              <TouchableOpacity onPress={() => navigate('ResetPassword')}>
-                <Text style={styles.registerButton}>
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('ResetPassword')}>
+                Forgot Password?
+              </Button>
             </View>
           </TouchableWithoutFeedback>}
       </KeyboardAvoidingView>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  inner: {
-    padding: 20,
-    textAlign: 'center',
-    textAlignVertical: "center",
-    alignItems: 'center',
-  },
-  spinner: {
-    marginTop: 350,
-    marginBottom: 15,
-    padding: 20,
-    textAlign: 'center',
-    justifyContent: 'center',
-    textAlignVertical: "center",
-    alignItems: 'center'
-  },
-  appTitle: {
-    marginTop: 15,
-    fontSize: 30,
-    padding: 10,
-    textAlign: 'center',
-  },
-  pageTitle: {
-    fontSize: 26,
-    padding: 10,
-    textAlign: 'center',
-  },
-  appText: {
-    fontSize: 20,
-    padding: 10,
-    textAlign: 'center'
-  },
-  loginButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#44a2ff',
-    minWidth: 100,
-    textAlign: 'center'
-  },
-  registerButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: '#44a2ff',
-    textAlign: 'center'
-  },
-  textInput: {
-    fontSize: 20,
-    padding: 5,
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderColor: 'grey',
-    minWidth: 275,
-    textAlign: 'left'
-  }
-});

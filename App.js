@@ -1,6 +1,7 @@
-import React, {Component} from 'react';
-import {createAppContainer} from 'react-navigation';
-import {createSwitchNavigator} from 'react-navigation'
+import React, { Component } from 'react';
+import { createAppContainer, StackActions, NavigationActions } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack'
+import { createDrawerNavigator } from 'react-navigation-drawer';
 import {
   View,
   Image
@@ -10,23 +11,77 @@ import {
   SplashScreen,
 } from 'expo';
 import { Asset } from "expo-asset";
+import {
+  Provider as PaperProvider,
+  IconButton
+} from 'react-native-paper';
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Profile from "./components/Profile/Profile";
 import ResetPassword from "./components/ResetPassword/ResetPassword";
+import CustomTheme from './components/themes/CustomTheme';
+import Reminders from './components/Reminders/Reminders'
 
-const RootStack = createSwitchNavigator({
-    Login: Login,
-    Register: Register,
-    Profile: Profile,
-    ResetPassword: ResetPassword
+const DrawerNavigator = createDrawerNavigator(
+  {
+    Profile: {
+      screen: Profile,
+    },
+    Reminders: {
+      screen: Reminders,
+    },
   },
   {
-    initialRouteName: 'Login',
+    drawerWidth: 250,
+    drawerPosition: 'left',
+    initialRouteName: 'Profile',
+  });
+
+const RootConfig = createStackNavigator(
+  {
+    Login: {
+      screen: Login,
+      navigationOptions: {
+        header: null
+      }
+    },
+    Register: {
+      screen: Register,
+      navigationOptions: {
+        header: null
+      }
+    },
+    Profile: {
+      screen: DrawerNavigator,
+      navigationOptions: ({ navigation }) => ({
+        title: 'Profile',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}></IconButton>
+      })
+    },
+    Reminders: {
+      screen: Reminders,
+      navigationOptions: ({ navigation }) => ({
+        title: 'Reminders',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}></IconButton>
+      })
+    },
+    ResetPassword: {
+      screen: ResetPassword,
+      navigationOptions: {
+        header: null
+      }
+    }
+  },
+  {
+    initialRouteName: "Login",
   }
 );
 
-const AppContainer = createAppContainer(RootStack);
+const AppContainer = createAppContainer(RootConfig);
+
+const theme = {
+  ...CustomTheme,
+};
 
 export default class App extends Component {
   constructor(props) {
@@ -61,7 +116,9 @@ export default class App extends Component {
     }
 
     return (
-      <AppContainer/>
+      <PaperProvider theme={theme}>
+        <AppContainer />
+      </PaperProvider>
     );
   }
 

@@ -1,31 +1,47 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   YellowBox
 } from 'react-native';
+import {
+  Button,
+  Text,
+  TextInput
+} from 'react-native-paper';
 import firebase from "../../firebaseConfig.js";
-import {TouchableWithoutFeedback} from "react-native-web";
+import * as Yup from "yup";
+import { ErrorMessage } from "../common/ErrorMessage";
+import { Formik } from "formik";
+import styles from '../themes/styles';
+
+const ResetPasswordSchema = Yup.object().shape({
+  email: Yup.string()
+    .label('Email')
+    .email('Enter a valid email')
+    .required('Please enter a registered email'),
+});
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: ''
+      email: '',
+      error: false,
+      errorMessage: ''
     }
   }
 
-  handleReset = () => {
+  handleReset = (values) => {
     let auth = firebase.auth();
-    let {email} = this.state;
+    let { email } = values;
 
     auth.sendPasswordResetEmail(email.trim())
       .then(() => {
@@ -33,26 +49,31 @@ export default class Login extends Component {
           'Email Sent',
           'Please Check Your Email.',
           [
-            {text: 'Return To Login', onPress: () => this.props.navigation.navigate('Login')},
-            {text: 'Ok'},
+            { text: 'Return To Login', onPress: () => this.props.navigation.navigate('Login') },
+            { text: 'Ok' },
           ],
-          {cancelable: false}
+          { cancelable: false }
         )
-      }).catch(function (error) {
-
-      Alert.alert(
-        email.length < 1 ? 'Please Enter Your Email' : (email ? 'Password Reset Unsuccessful' : 'Email Not Found'),
-        'Your Password Has Not Been Reset',
-        [
-          {text: 'Ok'},
-        ],
-        {cancelable: false}
-      )
-    });
+      }).catch((error) => {
+        if (error.message === 'There is no user record corresponding to this identifier. The user may have been deleted.') {
+          this.setState({
+            error: true,
+            errorMessage: 'Email Not Found'
+          })
+        }
+        else {
+          this.setState({
+            error: true,
+            errorMessage: 'Password Not Reset'
+          })
+        }
+      });
   };
 
   render() {
-    const {navigate} = this.props.navigation;
+    const { navigate } = this.props.navigation;
+    const { theme } = this.props
+    const { errorMessage } = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <View style={styles.inner}>
@@ -60,21 +81,43 @@ export default class Login extends Component {
             <View>
               <Text style={styles.pageTitle}>Password Reset</Text>
               <Text style={styles.appText}>To reset your password please enter you email below.</Text>
-              <TextInput style={styles.textInput}
-                         placeholder="Email"
-                         onChangeText={text => this.setState({email: text})}/>
 
-              <TouchableOpacity onPress={this.handleReset}>
-                <Text style={styles.resetButton}>
-                  Reset Password
-                </Text>
-              </TouchableOpacity>
+              <Formik initialValues={{ email: '' }}
+                onSubmit={values => this.handleReset(values)}
+                validationSchema={ResetPasswordSchema}>
+                {({
+                  handleChange,
+                  values,
+                  handleSubmit,
+                  errors,
+                  isValid,
+                  touched,
+                  handleBlur,
+                  isSubmitting
+                }) => (
+                    <View>
+                      <TextInput
+                        theme={theme}
+                        placeholder="Email"
+                        onChangeText={handleChange('email')}
+                        onBlur={handleBlur('email')}
+                        value={values.email}
+                        mode='outlined' />
+                      <ErrorMessage errorValue={(touched.email && errors.email) || (touched.email && errorMessage)} />
 
-              <TouchableOpacity onPress={() => navigate('Login')}>
-                <Text style={styles.returnToLoginButton}>
-                  Return To Login
-                </Text>
-              </TouchableOpacity>
+                      <Button theme={theme} onPress={handleSubmit}
+                        disabled={!isValid || isSubmitting}
+                        mode="contained"
+                        labelStyle={styles.buttonTextColour}>
+                        Reset Password
+                      </Button>
+                    </View>
+                  )}
+              </Formik>
+
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Login')}>
+                Return To Login
+              </Button>
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -82,58 +125,3 @@ export default class Login extends Component {
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  inner: {
-    padding: 20,
-    textAlign: 'center',
-    textAlignVertical: "center",
-    alignItems: 'center',
-  },
-  pageTitle: {
-    fontSize: 26,
-    padding: 10,
-    textAlign: 'center',
-  },
-  appText: {
-    fontSize: 20,
-    padding: 10,
-    textAlign: 'center'
-  },
-  loginButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#44a2ff',
-    minWidth: 100,
-    textAlign: 'center'
-  },
-  resetButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: 'white',
-    backgroundColor: '#44a2ff',
-    textAlign: 'center'
-  },
-  returnToLoginButton: {
-    fontSize: 20,
-    margin: 10,
-    padding: 10,
-    color: '#44a2ff',
-    textAlign: 'center'
-  },
-  textInput: {
-    marginBottom: 10,
-    fontSize: 20,
-    padding: 5,
-    borderBottomWidth: 1,
-    borderColor: 'grey',
-    minWidth: 275,
-    textAlign: 'left'
-  },
-});

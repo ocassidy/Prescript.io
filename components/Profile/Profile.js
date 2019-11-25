@@ -1,19 +1,21 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   View,
-  Modal,
-  TouchableHighlight,
-  YellowBox
+  YellowBox,
+  BackHandler
 } from 'react-native'
 import {
   Text,
-  Button
+  Button,
+  ActivityIndicator
 } from 'react-native-paper';
+import AddInfoModal from './AddInfoModal'
 import firebase from "../../firebaseConfig.js";
 import styles from '../themes/styles';
-
+import IsLoadingSpinner from "../common/IsLoadingSpinner";
+import {sendRegistrationEmail} from "../utils";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Profile extends Component {
@@ -22,14 +24,13 @@ export default class Profile extends Component {
     this.state = {
       error: false,
       errorMessage: '',
-      name: '',
-      email: '',
-      photoUrl: '',
-      emailVerified: false,
-      uid: '',
       address: '',
       phoneNumber: '',
       modalVisible: false,
+      modalSuccessTextVisible: false,
+      isUserDataLoading: true,
+      isUserLoading: true,
+      user: null
     }
   }
 
@@ -37,115 +38,128 @@ export default class Profile extends Component {
     firebase.auth().signOut().then(() => {
       this.props.navigation.navigate('Login')
     }).catch(function (error) {
-      this.setState({ errorMessage: error.message, error: true })
+      this.setState({errorMessage: error.message, error: true})
     });
   };
 
-  componentDidMount() {
+  componentDidMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', () => true);
     let user = firebase.auth().currentUser;
 
     if (user != null) {
       this.setState({
-        name: user.displayName,
-        email: user.email,
-        photoUrl: user.photoURL,
-        emailVerified: user.emailVerified,
-        uid: user.uid,
-      })
+        user: user,
+      });
+      this.getUserData(user.uid);
     }
+  };
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', () => false);
   }
 
-  componentDidUpdate() {
-    this.getUserData();
-  }
-
-  getUserData = () => {
-    const { uid } = this.state;
+  getUserData = (uid) => {
+    if (this.state.uid) {
+      uid = this.state.uid
+    }
 
     firebase.database().ref('users/' + uid)
       .on('value', (snapshot) => {
-        console.log('snapshot.val()', snapshot.val());
-      },
+          this.setState({
+            address: snapshot.val().address,
+            phoneNumber: snapshot.val().phoneNumber,
+          })
+        },
         (error) => {
-          console.log("Error:", error.code);
+          console.log("Error:", error);
         }
       );
   };
 
-  setModalVisible(visible) {
-    this.setState({ modalVisible: visible });
-  }
+  setModalVisible = (visible) => {
+    if (visible) {
+      this.setState({modalVisible: true});
+    } else {
+      this.setState({modalVisible: false});
+    }
+  };
 
-  saveUserDetailsAddressAndPhoneNumber = () => {
-    const { uid, address, phoneNumber } = this.state;
+  saveUserDetailsAddressAndPhoneNumber = (values) => {
+    const {uid} = this.state;
+    const {address, phoneNumber} = values;
 
     firebase
       .database()
       .ref('users/' + uid)
-      .set({
+      .update({
         address,
         phoneNumber
       })
       .then(response => {
         console.log('database response ', response);
+        this.setState({
+          modalSuccessTextVisible: true
+        })
       }).catch((error) => {
-        console.log('error ', error);
-      });
+      console.log('error ', error);
+    });
   };
 
   render() {
-    const { theme } = this.props;
-    const { name, email, photoUrl, emailVerified, address, phoneNumber } = this.state;
+    const {theme} = this.props;
+    const {address, phoneNumber, user} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
-        <View style={styles.inner}>
-          {name ? <Text style={styles.appText} theme={theme}>Hi {name}!</Text> : undefined}
-          <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
-          <Text style={styles.appText} theme={theme}>Your details:</Text>
-          <Text style={styles.appText} theme={theme}>Your current email is {email ? email : undefined}</Text>
-          <Text style={styles.appText} theme={theme}>Your email {emailVerified ? 'is' : 'is not'} verified.</Text>
-          <Text style={styles.appText} theme={theme}>
-            Your address {address ? 'is' : 'is not set'} {address ? address : undefined}.
-          </Text>
+        {user === null ?
+          <IsLoadingSpinner/> :
+          <View style={styles.inner}>
+            {user.displayName ? <Text style={styles.appText} theme={theme}>Hi {user.displayName}!</Text> : undefined}
+            <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
+            <Text style={styles.appText} theme={theme}>Your details:</Text>
+            <Text style={styles.appText} theme={theme}>Your current email is {user.email ? user.email : undefined}</Text>
+            <Text style={styles.appText} theme={theme}>Your email {user.emailVerified ? 'is' : 'is not'} verified.</Text>
+            {
+              !user.emailVerified ? <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
+                  sendRegistrationEmail(user)
+                }}>
+                  Resend Password Verification
+                </Button>
+                : undefined
+            }
+            <Text style={styles.appText} theme={theme}>
+              Your address {address ? 'is' : 'is not set'} {address ? address : undefined}.
+            </Text>
 
-          <Text style={styles.appText} theme={theme}>
-            Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : undefined}.
-          </Text>
+            <Text style={styles.appText} theme={theme}>
+              Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : undefined}.
+            </Text>
 
-          {
-            !address || !phoneNumber ?
-              <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
-                this.setModalVisible(true);
-              }}>
-                Add An {!address ? 'Address' : undefined} and {!phoneNumber ? 'Phone Number' : undefined}?
-              </Button>
-              : undefined
-          }
+            {
+              !address || !phoneNumber ?
+                <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
+                  this.setModalVisible(true)
+                }}>
+                  Add An {!address ? 'Address' : undefined} and {!phoneNumber ? 'Phone Number' : undefined}?
+                </Button>
+                : undefined
+            }
 
-          {this.state.modalVisible
-            ? <Modal
-              animationType="fade"
-              transparent={false}
-              visible={this.state.modalVisible}
-              onRequestClose={() => {
-                Alert.alert('Modal has been closed.');
-              }}>
-              <View style={styles.inner}>
-                <View>
-                  <Text style={styles.appText}>Hello World!</Text>
+            {
+              this.state.modalVisible
+                ? <AddInfoModal
+                  visible={this.state.modalVisible}
+                  saveUserDetailsAddressAndPhoneNumber={this.saveUserDetailsAddressAndPhoneNumber}
+                  modalSuccessTextVisible={this.state.modalSuccessTextVisible}
+                  setModalVisible={this.setModalVisible}
+                  animationType="fade"
+                  transparent={false}
+                  onRequestClose={() => {
+                    Alert.alert('Modal has been closed.');
+                  }}>
+                </AddInfoModal>
+                : undefined
+            }
 
-                  <TouchableHighlight
-                    onPress={() => {
-                      this.setModalVisible(!this.state.modalVisible);
-                    }}>
-                    <Text style={styles.appText}>Hide Modal</Text>
-                  </TouchableHighlight>
-                </View>
-              </View>
-            </Modal>
-            : undefined}
-
-          <View style={styles.logoutDeleteAccountRow}>
             <View>
               <Button style={styles.buttonSpacing} theme={theme} onPress={this.signOut}>
                 Logout
@@ -158,16 +172,15 @@ export default class Profile extends Component {
 
             <View>
               <Button style={styles.buttonSpacing}
-                theme={theme}
-                onPress={this.signOut}
-                mode="contained"
-                color={'red'}
-                labelStyle={styles.buttonTextColour}>
+                      theme={theme}
+                      onPress={this.signOut}
+                      mode="contained"
+                      color={'red'}
+                      labelStyle={styles.buttonTextColour}>
                 Delete Account
               </Button>
             </View>
-          </View>
-        </View>
+          </View>}
       </KeyboardAvoidingView>
     )
   }

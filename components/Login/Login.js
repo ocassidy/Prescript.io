@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   View,
   TouchableWithoutFeedback,
@@ -8,17 +8,19 @@ import {
   YellowBox,
 } from 'react-native';
 import firebase from "../../firebaseConfig.js";
-import { Formik } from "formik";
+import {Formik} from "formik";
 import * as Yup from 'yup';
-import { ErrorMessage } from "../common/ErrorMessage";
+import {ErrorMessage} from "../common/ErrorMessage";
 import {
-  ActivityIndicator,
   Button,
   Text,
   TextInput
 } from 'react-native-paper';
-import { NavigationActions, StackActions } from 'react-navigation'
+import {NavigationActions, StackActions} from 'react-navigation'
+import IsLoadingSpinner from "../common/IsLoadingSpinner";
 import styles from '../themes/styles';
+import {Notifications} from 'expo';
+import * as Permissions from 'expo-permissions';
 
 const LoginSchema = Yup.object().shape({
   password: Yup.string()
@@ -45,8 +47,6 @@ export default class Login extends Component {
   }
 
   componentDidMount() {
-    this.props.navigation.dispatch(this.resetStack);
-
     this.authFirebaseListener = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.setState({
@@ -75,87 +75,118 @@ export default class Login extends Component {
         index: 0,
         actions: [
           NavigationActions.navigate({
-            routeName: 'Profile',
-            routeName: 'Register',
-            routeName: 'ResetPassword'
+            routeName: 'AppStack',
           }),
         ],
         key: null
       }))
-  }
+  };
 
   handleLogin = (values) => {
     firebase
       .auth()
       .signInWithEmailAndPassword(values.email.trim(), values.password.trim())
-      .then(() => {
-        this.props.navigation.navigate('Profile')
+      .then((user) => {
+        this.props.navigation.dispatch(this.resetStack);
+        this.registerUserForPushNotifications(user)
+          .then(r => this.props.navigation.navigate('Profile'))
+          .catch(error => console.log(error));
       })
       .catch((error) => {
-        this.setState({ errorMessage: error.message, error: true })
+        this.setState({errorMessage: error.message, error: true})
       });
   };
 
+  registerUserForPushNotifications = async (user) => {
+    const {status: existingStatus} = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const {status} = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      return;
+    }
+
+    let token = await Notifications.getExpoPushTokenAsync();
+
+    console.log(user.user.uid)
+
+    firebase
+      .database()
+      .ref('users/' + user.user.uid)
+      .update({
+        expoToken: token
+      })
+      .then(response => {
+        console.log('database update response ', response);
+      }).catch((error) => {
+      console.log('database update error ', error);
+    });
+  };
+
   render() {
-    const { navigate } = this.props.navigation;
-    const { theme } = this.props;
-    const { isLoading, authenticated } = this.state;
+    const {navigate} = this.props.navigation;
+    const {theme} = this.props;
+    const {isLoading, authenticated, errorMessage, error} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
-        {isLoading && !authenticated ?
-          <View style={styles.spinner}>
-            <ActivityIndicator size="large" color="black" />
-            <Text>Loading Please Wait...</Text>
-          </View> :
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {isLoading && !authenticated
+          ? <IsLoadingSpinner/>
+          : <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.inner}>
               <Text style={styles.appTitle} theme={theme}>Prescript.io</Text>
               <Text style={styles.appText} theme={theme}>Your Prescription Management App </Text>
               <Text style={styles.pageTitle} theme={theme}>Login</Text>
-              <Formik initialValues={{ email: '', password: '' }}
-                onSubmit={values => this.handleLogin(values)}
-                validationSchema={LoginSchema}>
+              <Formik initialValues={{email: '', password: ''}}
+                      onSubmit={values => this.handleLogin(values)}
+                      validationSchema={LoginSchema}>
                 {({
-                  handleChange,
-                  values,
-                  handleSubmit,
-                  errors,
-                  isValid,
-                  touched,
-                  handleBlur,
-                  isSubmitting
-                }) => (
-                    <View>
-                      <TextInput
-                        theme={theme}
-                        placeholder="Email"
-                        onChangeText={handleChange('email')}
-                        onBlur={handleBlur('email')}
-                        value={values.email}
-                        mode='outlined'
-                      />
-                      <ErrorMessage errorValue={touched.email && errors.email} />
+                    handleChange,
+                    values,
+                    handleSubmit,
+                    errors,
+                    isValid,
+                    touched,
+                    handleBlur,
+                    isSubmitting
+                  }) => (
+                  <View>
+                    <TextInput
+                      theme={theme}
+                      placeholder="Email"
+                      onChangeText={handleChange('email')}
+                      onBlur={handleBlur('email')}
+                      value={values.email}
+                      mode='outlined'
+                    />
+                    <ErrorMessage errorValue={touched.email && errors.email}/>
 
-                      <TextInput
-                        theme={theme}
-                        placeholder="Password"
-                        onChangeText={handleChange('password')}
-                        onBlur={handleBlur('password')}
-                        maxLength={24}
-                        value={values.password}
-                        secureTextEntry={true}
-                        mode='outlined'
-                      />
-                      <ErrorMessage errorValue={touched.password && errors.password} />
+                    <TextInput
+                      theme={theme}
+                      placeholder="Password"
+                      onChangeText={handleChange('password')}
+                      onBlur={handleBlur('password')}
+                      maxLength={24}
+                      value={values.password}
+                      secureTextEntry={true}
+                      mode='outlined'
+                    />
+                    <ErrorMessage errorValue={touched.password && errors.password}/>
 
-                      <Button theme={theme} onPress={handleSubmit}
-                        disabled={!isValid || isSubmitting}
-                        mode="contained"
-                        labelStyle={styles.buttonTextColour}>
-                        Login
-                      </Button>
-                    </View>
-                  )}
+                    {error ? <ErrorMessage errorValue={errorMessage}/> : undefined}
+                    <Button theme={theme}
+                            onPress={handleSubmit}
+                            mode="contained"
+                            labelStyle={styles.buttonTextColour}>
+                      Login
+                    </Button>
+                  </View>
+                )}
               </Formik>
 
               <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Register')}>

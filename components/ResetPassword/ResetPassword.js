@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   Alert,
   Keyboard,
@@ -17,8 +17,8 @@ import {
 } from 'react-native-paper';
 import firebase from "../../firebaseConfig.js";
 import * as Yup from "yup";
-import { ErrorMessage } from "../common/ErrorMessage";
-import { Formik } from "formik";
+import {ErrorMessage} from "../common/ErrorMessage";
+import {Formik} from "formik";
 import styles from '../themes/styles';
 
 const ResetPasswordSchema = Yup.object().shape({
@@ -41,7 +41,7 @@ export default class Login extends Component {
 
   handleReset = (values) => {
     let auth = firebase.auth();
-    let { email } = values;
+    let {email} = values;
 
     auth.sendPasswordResetEmail(email.trim())
       .then(() => {
@@ -49,31 +49,30 @@ export default class Login extends Component {
           'Email Sent',
           'Please Check Your Email.',
           [
-            { text: 'Return To Login', onPress: () => this.props.navigation.navigate('Login') },
-            { text: 'Ok' },
+            {text: 'Return To Login', onPress: () => this.props.navigation.navigate('Login')},
+            {text: 'Ok'},
           ],
-          { cancelable: false }
+          {cancelable: false}
         )
       }).catch((error) => {
-        if (error.message === 'There is no user record corresponding to this identifier. The user may have been deleted.') {
-          this.setState({
-            error: true,
-            errorMessage: 'Email Not Found'
-          })
-        }
-        else {
-          this.setState({
-            error: true,
-            errorMessage: 'Password Not Reset'
-          })
-        }
-      });
+      if (error.message === 'There is no user record corresponding to this identifier. The user may have been deleted.') {
+        this.setState({
+          error: true,
+          errorMessage: 'Email Not Found'
+        })
+      } else {
+        this.setState({
+          error: true,
+          errorMessage: 'Password Not Reset'
+        })
+      }
+    });
   };
 
   render() {
-    const { navigate } = this.props.navigation;
-    const { theme } = this.props
-    const { errorMessage } = this.state;
+    const {navigate} = this.props.navigation;
+    const {theme} = this.props
+    const {errorMessage} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <View style={styles.inner}>
@@ -82,37 +81,37 @@ export default class Login extends Component {
               <Text style={styles.pageTitle}>Password Reset</Text>
               <Text style={styles.appText}>To reset your password please enter you email below.</Text>
 
-              <Formik initialValues={{ email: '' }}
-                onSubmit={values => this.handleReset(values)}
-                validationSchema={ResetPasswordSchema}>
+              <Formik initialValues={{email: ''}}
+                      onSubmit={values => this.handleReset(values)}
+                      validationSchema={ResetPasswordSchema}>
                 {({
-                  handleChange,
-                  values,
-                  handleSubmit,
-                  errors,
-                  isValid,
-                  touched,
-                  handleBlur,
-                  isSubmitting
-                }) => (
-                    <View>
-                      <TextInput
-                        theme={theme}
-                        placeholder="Email"
-                        onChangeText={handleChange('email')}
-                        onBlur={handleBlur('email')}
-                        value={values.email}
-                        mode='outlined' />
-                      <ErrorMessage errorValue={(touched.email && errors.email) || (touched.email && errorMessage)} />
+                    handleChange,
+                    values,
+                    handleSubmit,
+                    errors,
+                    isValid,
+                    touched,
+                    handleBlur,
+                    isSubmitting
+                  }) => (
+                  <View>
+                    <TextInput
+                      theme={theme}
+                      placeholder="Email"
+                      onChangeText={handleChange('email')}
+                      onBlur={handleBlur('email')}
+                      value={values.email}
+                      mode='outlined'/>
+                    <ErrorMessage errorValue={(touched.email && errors.email) || (touched.email && errorMessage)}/>
 
-                      <Button theme={theme} onPress={handleSubmit}
-                        disabled={!isValid || isSubmitting}
-                        mode="contained"
-                        labelStyle={styles.buttonTextColour}>
-                        Reset Password
-                      </Button>
-                    </View>
-                  )}
+                    <Button theme={theme} onPress={handleSubmit}
+                            disabled={!isValid || isSubmitting}
+                            mode="contained"
+                            labelStyle={styles.buttonTextColour}>
+                      Reset Password
+                    </Button>
+                  </View>
+                )}
               </Formik>
 
               <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Login')}>

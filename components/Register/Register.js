@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   TouchableWithoutFeedback,
   View,
@@ -8,15 +8,16 @@ import {
   YellowBox,
 } from 'react-native';
 import firebase from "../../firebaseConfig.js";
-import { Formik } from "formik";
+import {Formik} from "formik";
 import * as Yup from "yup";
-import { ErrorMessage } from "../common/ErrorMessage";
+import {ErrorMessage} from "../common/ErrorMessage";
 import {
   Button,
   Text,
   TextInput
 } from 'react-native-paper';
 import styles from '../themes/styles';
+import {sendRegistrationEmail} from "../utils";
 
 const RegisterSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -54,16 +55,16 @@ export default class Register extends Component {
       .createUserWithEmailAndPassword(values.email.trim(), values.password.trim())
       .then((response) => {
         this.saveUserDetailsToDatabaseAndUpdateDisplayName(response.user, values);
-        this.sendRegistrationEmail(response.user);
+        sendRegistrationEmail(response.user);
         this.props.navigation.navigate('Profile');
       })
       .catch((error) => {
-        this.setState({ errorMessage: error.message, error: true })
+        this.setState({errorMessage: error.message, error: true})
       });
   };
 
   saveUserDetailsToDatabaseAndUpdateDisplayName = (user, values) => {
-    const { firstName, lastName, email, username } = values;
+    const {firstName, lastName, email, username} = values;
 
     firebase
       .database()
@@ -77,8 +78,8 @@ export default class Register extends Component {
       .then(response => {
         console.log('database response ', response);
       }).catch((error) => {
-        console.log('error ', error);
-      });
+      console.log('error ', error);
+    });
 
     user.updateProfile({
       displayName: username
@@ -89,18 +90,9 @@ export default class Register extends Component {
     });
   };
 
-  sendRegistrationEmail = (user) => {
-    user.sendEmailVerification()
-      .then(response => {
-        console.log('response ', response);
-      }).catch((error) => {
-        console.log('error ', error);
-      });
-  };
-
   render() {
-    const { navigate } = this.props.navigation;
-    const { theme } = this.props;
+    const {navigate} = this.props.navigation;
+    const {theme} = this.props;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -115,81 +107,81 @@ export default class Register extends Component {
               Register
             </Text>
 
-            <Formik initialValues={{ firstName: '', lastName: '', email: '', username: '', password: '' }}
-              onSubmit={values => this.handleRegister(values)}
-              validationSchema={RegisterSchema}>
+            <Formik initialValues={{firstName: '', lastName: '', email: '', username: '', password: ''}}
+                    onSubmit={values => this.handleRegister(values)}
+                    validationSchema={RegisterSchema}>
               {({
-                handleChange,
-                values,
-                handleSubmit,
-                errors,
-                isValid,
-                touched,
-                handleBlur,
-                isSubmitting
-              }) => (
-                  <View>
-                    <View style={styles.firstNameLastNameRow}>
-                      <View>
-                        <TextInput
-                          theme={theme}
-                          placeholder="First Name"
-                          onChangeText={handleChange('firstName')}
-                          onBlur={handleBlur('firstName')}
-                          value={values.firstName}
-                          mode='outlined' />
-                        <ErrorMessage errorValue={touched.firstName && errors.firstName} />
-                      </View>
-
-                      <View>
-                        <TextInput
-                          theme={theme}
-                          placeholder="Last Name"
-                          onChangeText={handleChange('lastName')}
-                          onBlur={handleBlur('lastName')}
-                          value={values.lastName}
-                          mode='outlined' />
-                        <ErrorMessage errorValue={touched.lastName && errors.lastName} />
-                      </View>
+                  handleChange,
+                  values,
+                  handleSubmit,
+                  errors,
+                  isValid,
+                  touched,
+                  handleBlur,
+                  isSubmitting
+                }) => (
+                <View>
+                  <View style={styles.firstNameLastNameRow}>
+                    <View>
+                      <TextInput
+                        theme={theme}
+                        placeholder="First Name"
+                        onChangeText={handleChange('firstName')}
+                        onBlur={handleBlur('firstName')}
+                        value={values.firstName}
+                        mode='outlined'/>
+                      <ErrorMessage errorValue={touched.firstName && errors.firstName}/>
                     </View>
 
-                    <TextInput
-                      theme={theme}
-                      placeholder="Email"
-                      onChangeText={handleChange('email')}
-                      onBlur={handleBlur('email')}
-                      value={values.email}
-                      mode='outlined' />
-                    <ErrorMessage errorValue={touched.email && errors.email} />
-
-                    <TextInput
-                      theme={theme}
-                      placeholder="Username"
-                      onChangeText={handleChange('username')}
-                      onBlur={handleBlur('username')}
-                      value={values.username}
-                      mode='outlined' />
-                    <ErrorMessage errorValue={touched.username && errors.username} />
-
-                    <TextInput
-                      theme={theme}
-                      placeholder="Password"
-                      onChangeText={handleChange('password')}
-                      onBlur={handleBlur('password')}
-                      secureTextEntry={true}
-                      value={values.password}
-                      mode='outlined' />
-                    <ErrorMessage errorValue={touched.password && errors.password} />
-
-                    <Button theme={theme}
-                      onPress={handleSubmit}
-                      disabled={!isValid || isSubmitting}
-                      mode="contained"
-                      labelStyle={styles.buttonTextColour}>
-                      Register
-                    </Button>
+                    <View>
+                      <TextInput
+                        theme={theme}
+                        placeholder="Last Name"
+                        onChangeText={handleChange('lastName')}
+                        onBlur={handleBlur('lastName')}
+                        value={values.lastName}
+                        mode='outlined'/>
+                      <ErrorMessage errorValue={touched.lastName && errors.lastName}/>
+                    </View>
                   </View>
-                )}
+
+                  <TextInput
+                    theme={theme}
+                    placeholder="Email"
+                    onChangeText={handleChange('email')}
+                    onBlur={handleBlur('email')}
+                    value={values.email}
+                    mode='outlined'/>
+                  <ErrorMessage errorValue={touched.email && errors.email}/>
+
+                  <TextInput
+                    theme={theme}
+                    placeholder="Username"
+                    onChangeText={handleChange('username')}
+                    onBlur={handleBlur('username')}
+                    value={values.username}
+                    mode='outlined'/>
+                  <ErrorMessage errorValue={touched.username && errors.username}/>
+
+                  <TextInput
+                    theme={theme}
+                    placeholder="Password"
+                    onChangeText={handleChange('password')}
+                    onBlur={handleBlur('password')}
+                    secureTextEntry={true}
+                    value={values.password}
+                    mode='outlined'/>
+                  <ErrorMessage errorValue={touched.password && errors.password}/>
+
+                  <Button theme={theme}
+                          onPress={handleSubmit}
+                          disabled={!isValid || isSubmitting}
+                          mode="contained"
+                          labelStyle={styles.buttonTextColour}>
+                    Register
+                  </Button>
+                </View>
+              )}
             </Formik>
 
             <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Login')}>

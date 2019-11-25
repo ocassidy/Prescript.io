@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { createAppContainer, StackActions, NavigationActions } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack'
-import { createDrawerNavigator } from 'react-navigation-drawer';
+import React, {Component} from 'react';
+import {createAppContainer, createSwitchNavigator} from 'react-navigation';
+import {createStackNavigator} from 'react-navigation-stack'
+import {createDrawerNavigator} from 'react-navigation-drawer';
 import {
   View,
   Image
@@ -10,7 +10,7 @@ import {
   AppLoading,
   SplashScreen,
 } from 'expo';
-import { Asset } from "expo-asset";
+import {Asset} from "expo-asset";
 import {
   Provider as PaperProvider,
   IconButton
@@ -37,7 +37,7 @@ const DrawerNavigator = createDrawerNavigator(
     initialRouteName: 'Profile',
   });
 
-const RootConfig = createStackNavigator(
+const AuthSwitch = createSwitchNavigator(
   {
     Login: {
       screen: Login,
@@ -51,20 +51,6 @@ const RootConfig = createStackNavigator(
         header: null
       }
     },
-    Profile: {
-      screen: DrawerNavigator,
-      navigationOptions: ({ navigation }) => ({
-        title: 'Profile',
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}></IconButton>
-      })
-    },
-    Reminders: {
-      screen: Reminders,
-      navigationOptions: ({ navigation }) => ({
-        title: 'Reminders',
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}></IconButton>
-      })
-    },
     ResetPassword: {
       screen: ResetPassword,
       navigationOptions: {
@@ -77,7 +63,40 @@ const RootConfig = createStackNavigator(
   }
 );
 
-const AppContainer = createAppContainer(RootConfig);
+const AppStack = createStackNavigator(
+  {
+    Profile: {
+      screen: DrawerNavigator,
+      navigationOptions: ({navigation}) => ({
+        title: 'Profile',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
+    },
+    Reminders: {
+      screen: Reminders,
+      navigationOptions: ({navigation}) => ({
+        title: 'Reminders',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
+    },
+  },
+  {
+    initialRouteName: "Profile",
+  }
+);
+
+const RootStack = createStackNavigator(
+  {
+    AuthStack: AuthSwitch,
+    AppStack: AppStack
+  },
+  {
+    initialRouteName: "AuthStack",
+    headerMode: 'none'
+  }
+);
+
+const AppContainer = createAppContainer(RootStack);
 
 const theme = {
   ...CustomTheme,
@@ -97,7 +116,7 @@ export default class App extends Component {
       return (
         <AppLoading
           startAsync={this._cacheSplashResourcesAsync}
-          onFinish={() => this.setState({ isSplashReady: true })}
+          onFinish={() => this.setState({isSplashReady: true})}
           onError={console.warn}
           autoHideSplash={false}
         />
@@ -106,7 +125,7 @@ export default class App extends Component {
 
     if (!this.state.isAppReady) {
       return (
-        <View style={{ flex: 1 }}>
+        <View style={{flex: 1}}>
           <Image
             source={require('./assets/splash.gif')}
             onLoad={this._cacheResourcesAsync}
@@ -117,7 +136,7 @@ export default class App extends Component {
 
     return (
       <PaperProvider theme={theme}>
-        <AppContainer />
+        <AppContainer/>
       </PaperProvider>
     );
   }
@@ -139,6 +158,6 @@ export default class App extends Component {
     });
 
     await Promise.all(cacheImages);
-    this.setState({ isAppReady: true });
+    this.setState({isAppReady: true});
   };
 }

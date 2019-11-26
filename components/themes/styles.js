@@ -20,6 +20,15 @@ export default styles = StyleSheet.create({
     textAlignVertical: "center",
     alignItems: 'center'
   },
+  smallSpinner: {
+    marginTop: 10,
+    marginBottom: 10,
+    padding: 20,
+    textAlign: 'center',
+    justifyContent: 'center',
+    textAlignVertical: "center",
+    alignItems: 'center'
+  },
   appTitle: {
     marginTop: 15,
     fontSize: 30,
@@ -36,8 +45,19 @@ export default styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center'
   },
+  loggedOutText: {
+    fontSize: 18,
+    padding: 10,
+    textAlign: 'center',
+    color: 'orange'
+  },
+  deletedAccountText: {
+    fontSize: 18,
+    padding: 10,
+    textAlign: 'center',
+    color: 'red'
+  },
   buttonSpacing: {
-    marginTop: 10,
     marginTop: 10,
   },
   buttonTextColour: {

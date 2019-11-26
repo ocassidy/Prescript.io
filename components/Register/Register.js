@@ -17,7 +17,7 @@ import {
   TextInput
 } from 'react-native-paper';
 import styles from '../themes/styles';
-import {sendRegistrationEmail} from "../utils";
+import {sendRegistrationEmail} from "../common/utils";
 
 const RegisterSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -121,29 +121,23 @@ export default class Register extends Component {
                   isSubmitting
                 }) => (
                 <View>
-                  <View style={styles.firstNameLastNameRow}>
-                    <View>
-                      <TextInput
-                        theme={theme}
-                        placeholder="First Name"
-                        onChangeText={handleChange('firstName')}
-                        onBlur={handleBlur('firstName')}
-                        value={values.firstName}
-                        mode='outlined'/>
-                      <ErrorMessage errorValue={touched.firstName && errors.firstName}/>
-                    </View>
+                  <TextInput
+                    theme={theme}
+                    placeholder="First Name"
+                    onChangeText={handleChange('firstName')}
+                    onBlur={handleBlur('firstName')}
+                    value={values.firstName}
+                    mode='outlined'/>
+                  <ErrorMessage errorValue={touched.firstName && errors.firstName}/>
 
-                    <View>
-                      <TextInput
-                        theme={theme}
-                        placeholder="Last Name"
-                        onChangeText={handleChange('lastName')}
-                        onBlur={handleBlur('lastName')}
-                        value={values.lastName}
-                        mode='outlined'/>
-                      <ErrorMessage errorValue={touched.lastName && errors.lastName}/>
-                    </View>
-                  </View>
+                  <TextInput
+                    theme={theme}
+                    placeholder="Last Name"
+                    onChangeText={handleChange('lastName')}
+                    onBlur={handleBlur('lastName')}
+                    value={values.lastName}
+                    mode='outlined'/>
+                  <ErrorMessage errorValue={touched.lastName && errors.lastName}/>
 
                   <TextInput
                     theme={theme}

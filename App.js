@@ -21,6 +21,7 @@ import Profile from "./components/Profile/Profile";
 import ResetPassword from "./components/ResetPassword/ResetPassword";
 import CustomTheme from './components/themes/CustomTheme';
 import Reminders from './components/Reminders/Reminders'
+import {DrawerNavigatorContent} from "./components/common/DrawerNavigatorContent";
 
 const DrawerNavigator = createDrawerNavigator(
   {
@@ -35,6 +36,7 @@ const DrawerNavigator = createDrawerNavigator(
     drawerWidth: 250,
     drawerPosition: 'left',
     initialRouteName: 'Profile',
+    contentComponent: DrawerNavigatorContent
   });
 
 const AuthSwitch = createSwitchNavigator(

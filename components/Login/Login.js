@@ -87,10 +87,10 @@ export default class Login extends Component {
       .auth()
       .signInWithEmailAndPassword(values.email.trim(), values.password.trim())
       .then((user) => {
-        this.props.navigation.dispatch(this.resetStack);
         this.registerUserForPushNotifications(user)
           .then(r => this.props.navigation.navigate('Profile'))
           .catch(error => console.log(error));
+        this.props.navigation.dispatch(this.resetStack);
       })
       .catch((error) => {
         this.setState({errorMessage: error.message, error: true})
@@ -114,8 +114,6 @@ export default class Login extends Component {
 
     let token = await Notifications.getExpoPushTokenAsync();
 
-    console.log(user.user.uid)
-
     firebase
       .database()
       .ref('users/' + user.user.uid)
@@ -123,15 +121,14 @@ export default class Login extends Component {
         expoToken: token
       })
       .then(response => {
-        console.log('database update response ', response);
+        console.log('registerUserForPushNotifications update response ', response);
       }).catch((error) => {
-      console.log('database update error ', error);
+      console.log('registerUserForPushNotifications update error ', error.message);
     });
   };
 
   render() {
-    const {navigate} = this.props.navigation;
-    const {theme} = this.props;
+    const {theme, navigation} = this.props;
     const {isLoading, authenticated, errorMessage, error} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
@@ -185,17 +182,25 @@ export default class Login extends Component {
                             labelStyle={styles.buttonTextColour}>
                       Login
                     </Button>
+                    {error ? <ErrorMessage errorValue={error.message}/> : undefined}
                   </View>
                 )}
               </Formik>
 
-              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('Register')}>
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigation.navigate('Register')}>
                 Don't have an account? Register Here
               </Button>
 
-              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigate('ResetPassword')}>
+              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigation.navigate('ResetPassword')}>
                 Forgot Password?
               </Button>
+
+              {navigation.state.params !== undefined && navigation.state.params.userAccountDeleted !== undefined
+                ? <Text style={styles.deletedAccountText} theme={theme}>You have deleted you account.</Text>
+                : undefined}
+              {navigation.state.params && navigation.state.params.loggedOut !== undefined
+                ? <Text style={styles.loggedOutText} theme={theme}>You have logged out.</Text>
+                : undefined}
             </View>
           </TouchableWithoutFeedback>}
       </KeyboardAvoidingView>

@@ -4,18 +4,19 @@ import {
   Platform,
   View,
   YellowBox,
-  BackHandler
+  BackHandler, Alert
 } from 'react-native'
 import {
   Text,
   Button,
-  ActivityIndicator
 } from 'react-native-paper';
 import AddInfoModal from './AddInfoModal'
 import firebase from "../../firebaseConfig.js";
 import styles from '../themes/styles';
 import IsLoadingSpinner from "../common/IsLoadingSpinner";
-import {sendRegistrationEmail} from "../utils";
+import {sendRegistrationEmail, signOut} from "../common/utils";
+import ChangePasswordModal from "./ChangePasswordModal";
+import DeleteAccountModal from "./DeleteAccountModal";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Profile extends Component {
@@ -26,21 +27,16 @@ export default class Profile extends Component {
       errorMessage: '',
       address: '',
       phoneNumber: '',
-      modalVisible: false,
+      addInfoModalModalVisible: false,
       modalSuccessTextVisible: false,
       isUserDataLoading: true,
       isUserLoading: true,
-      user: null
+      user: null,
+      userIndicationOnAccountDelete: false,
+      changePasswordModalVisible: false,
+      deleteAccountModalVisible: false
     }
   }
-
-  signOut = () => {
-    firebase.auth().signOut().then(() => {
-      this.props.navigation.navigate('Login')
-    }).catch(function (error) {
-      this.setState({errorMessage: error.message, error: true})
-    });
-  };
 
   componentDidMount = () => {
     BackHandler.addEventListener('hardwareBackPress', () => true);
@@ -63,7 +59,8 @@ export default class Profile extends Component {
       uid = this.state.uid
     }
 
-    firebase.database().ref('users/' + uid)
+    firebase.database()
+      .ref('users/' + uid)
       .on('value', (snapshot) => {
           this.setState({
             address: snapshot.val().address,
@@ -76,16 +73,32 @@ export default class Profile extends Component {
       );
   };
 
-  setModalVisible = (visible) => {
+  setAddInfoModalVisible = (visible) => {
     if (visible) {
-      this.setState({modalVisible: true});
+      this.setState({addInfoModalVisible: true});
     } else {
-      this.setState({modalVisible: false});
+      this.setState({addInfoModalVisible: false});
+    }
+  };
+
+  setChangePasswordModalVisible = (visible) => {
+    if (visible) {
+      this.setState({changePasswordModalVisible: true});
+    } else {
+      this.setState({changePasswordModalVisible: false});
+    }
+  };
+
+  setDeleteAccountModalVisible = (visible) => {
+    if (visible) {
+      this.setState({deleteAccountModalVisible: true});
+    } else {
+      this.setState({deleteAccountModalVisible: false});
     }
   };
 
   saveUserDetailsAddressAndPhoneNumber = (values) => {
-    const {uid} = this.state;
+    const {uid} = this.state.user;
     const {address, phoneNumber} = values;
 
     firebase
@@ -105,27 +118,56 @@ export default class Profile extends Component {
     });
   };
 
+  deleteAccount = (password) => {
+    let user = firebase.auth().currentUser;
+    //let credential = firebase.auth.EmailAuthProvider.credential(user.email, userProvidedPassword);
+
+
+    Alert.alert(
+      'Delete Account',
+      'Are you sure your wish to delete your account?',
+      [
+        {
+          text: 'Yes',
+          onPress: () =>
+            user.delete()
+              .then(() => {
+                this.props.navigation.navigate('Login', {userAccountDeleted: true})
+              }).catch((error) => {
+              console.log(error)
+            })
+        },
+        {text: 'No', onPress: () => this.setState({userIndicationOnAccountDelete: false})}
+      ],
+      {cancelable: false}
+    );
+  };
+
   render() {
-    const {theme} = this.props;
-    const {address, phoneNumber, user} = this.state;
+    const {theme, navigation} = this.props;
+    const {address, phoneNumber, user, addInfoModalVisible, changePasswordModalVisible, deleteAccountModalVisible} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
-        {user === null ?
-          <IsLoadingSpinner/> :
-          <View style={styles.inner}>
+        {user
+          ? <View style={styles.inner}>
             {user.displayName ? <Text style={styles.appText} theme={theme}>Hi {user.displayName}!</Text> : undefined}
             <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
             <Text style={styles.appText} theme={theme}>Your details:</Text>
-            <Text style={styles.appText} theme={theme}>Your current email is {user.email ? user.email : undefined}</Text>
-            <Text style={styles.appText} theme={theme}>Your email {user.emailVerified ? 'is' : 'is not'} verified.</Text>
-            {
-              !user.emailVerified ? <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
-                  sendRegistrationEmail(user)
-                }}>
-                  Resend Password Verification
-                </Button>
-                : undefined
-            }
+            <Text style={styles.appText} theme={theme}>Your current email
+              is {user.email ? user.email : undefined}</Text>
+            <Text style={styles.appText} theme={theme}>Your
+              email {user.emailVerified ? 'is' : 'is not'} verified.</Text>
+            {!user.emailVerified
+              ? <Button style={styles.buttonSpacing}
+                        theme={theme}
+                        onPress={() => {
+                          sendRegistrationEmail(user)
+                        }}
+                        mode='outlined'>
+                Resend Password Verification
+              </Button>
+              : undefined}
+
             <Text style={styles.appText} theme={theme}>
               Your address {address ? 'is' : 'is not set'} {address ? address : undefined}.
             </Text>
@@ -134,53 +176,74 @@ export default class Profile extends Component {
               Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : undefined}.
             </Text>
 
-            {
-              !address || !phoneNumber ?
-                <Button style={styles.buttonSpacing} theme={theme} onPress={() => {
-                  this.setModalVisible(true)
-                }}>
-                  Add An {!address ? 'Address' : undefined} and {!phoneNumber ? 'Phone Number' : undefined}?
-                </Button>
-                : undefined
-            }
-
-            {
-              this.state.modalVisible
-                ? <AddInfoModal
-                  visible={this.state.modalVisible}
-                  saveUserDetailsAddressAndPhoneNumber={this.saveUserDetailsAddressAndPhoneNumber}
-                  modalSuccessTextVisible={this.state.modalSuccessTextVisible}
-                  setModalVisible={this.setModalVisible}
-                  animationType="fade"
-                  transparent={false}
-                  onRequestClose={() => {
-                    Alert.alert('Modal has been closed.');
-                  }}>
-                </AddInfoModal>
-                : undefined
-            }
-
-            <View>
-              <Button style={styles.buttonSpacing} theme={theme} onPress={this.signOut}>
-                Logout
+            {!address || !phoneNumber ?
+              <Button style={styles.buttonSpacing} theme={theme}
+                      onPress={() => {
+                        this.setAddInfoModalVisible(true)
+                      }}
+                      mode='outlined'>
+                Add An Address and Phone Number?
               </Button>
-            </View>
+              : undefined}
 
-            <Button style={styles.buttonSpacing} theme={theme} onPress={this.signOut}>
+            {addInfoModalVisible
+              ? <AddInfoModal
+                saveUserDetailsAddressAndPhoneNumber={this.saveUserDetailsAddressAndPhoneNumber}
+                modalSuccessTextVisible={this.state.modalSuccessTextVisible}
+                setModalVisible={() => this.setAddInfoModalVisible()}
+                animationType="fade"
+                transparent={false}
+                onRequestClose={() => this.setAddInfoModalVisible()}>
+              </AddInfoModal>
+              : undefined}
+
+            {changePasswordModalVisible
+              ? <ChangePasswordModal
+                modalSuccessTextVisible={this.state.modalSuccessTextVisible}
+                setModalVisible={() => this.setChangePasswordModalVisible()}
+                animationType="fade"
+                transparent={false}
+                onRequestClose={() => this.setChangePasswordModalVisible()}>
+              </ChangePasswordModal>
+              : undefined}
+
+            {deleteAccountModalVisible
+              ? <DeleteAccountModal
+                deleteAccount={this.deleteAccount}
+                modalSuccessTextVisible={this.state.modalSuccessTextVisible}
+                setModalVisible={() => this.setDeleteAccountModalVisible()}
+                animationType="fade"
+                transparent={false}
+                onRequestClose={() => this.setDeleteAccountModalVisible()}>
+              </DeleteAccountModal>
+              : undefined}
+
+            <Button style={styles.buttonSpacing}
+                    theme={theme}
+                    onPress={() => this.setChangePasswordModalVisible(true)}
+                    mode='outlined'>
               Change Password
             </Button>
 
             <View>
-              <Button style={styles.buttonSpacing}
-                      theme={theme}
-                      onPress={this.signOut}
-                      mode="contained"
-                      color={'red'}
+              <Button style={styles.buttonSpacing} theme={theme}
+                      onPress={() => signOut(navigation)}
+                      mode='contained'
                       labelStyle={styles.buttonTextColour}>
-                Delete Account
+                Logout
               </Button>
             </View>
-          </View>}
+
+            <Button style={styles.buttonSpacing}
+                    theme={theme}
+                    onPress={() => this.setDeleteAccountModalVisible(true)}
+                    mode="contained"
+                    color={'red'}
+                    labelStyle={styles.buttonTextColour}>
+              Delete Account
+            </Button>
+          </View>
+          : <IsLoadingSpinner/>}
       </KeyboardAvoidingView>
     )
   }

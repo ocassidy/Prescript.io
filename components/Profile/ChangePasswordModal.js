@@ -17,12 +17,10 @@ import {ErrorMessage} from "../common/ErrorMessage";
 import styles from '../themes/styles';
 
 const ModalSchema = Yup.object().shape({
-  address: Yup.string()
-    .label('Phone Number')
+  password: Yup.string()
+    .min(6, 'Password must have at least 6 characters')
+    .max(50, 'Password must not be more than 50 characters')
     .required('Required'),
-  phoneNumber: Yup.string()
-    .label('Phone Number')
-    .required('Please enter a valid Phone Number'),
 });
 
 
@@ -33,8 +31,6 @@ export default class AddInfoModal extends Component {
     this.state = {
       error: false,
       errorMessage: '',
-      address: '',
-      phoneNumber: '',
     }
   }
 
@@ -52,9 +48,9 @@ export default class AddInfoModal extends Component {
             }}>
             <View style={styles.inner}>
               <View>
-                <Text style={styles.appText}>You can add your Address and Phone Number below.</Text>
+                <Text style={styles.appText}>You can change you password below.</Text>
 
-                <Formik initialValues={{address: '', phoneNumber: ''}}
+                <Formik initialValues={{newPassword: ''}}
                         onSubmit={values => saveUserDetailsAddressAndPhoneNumber(values)}
                         validationSchema={ModalSchema}>
                   {({
@@ -70,31 +66,21 @@ export default class AddInfoModal extends Component {
                     <View>
                       <TextInput
                         theme={theme}
-                        placeholder="Address"
-                        onChangeText={handleChange('address')}
-                        onBlur={handleBlur('address')}
-                        value={values.address}
+                        placeholder="New Password"
+                        onChangeText={handleChange('newPassword')}
+                        onBlur={handleBlur('newPassword')}
+                        value={values.newPassword}
                         mode='outlined'
                       />
-                      <ErrorMessage errorValue={touched.address && errors.address}/>
-
-                      <TextInput
-                        theme={theme}
-                        placeholder="Phone Number"
-                        onChangeText={handleChange('phoneNumber')}
-                        onBlur={handleBlur('phoneNumber')}
-                        value={values.phoneNumber}
-                        mode='outlined'
-                      />
-                      <ErrorMessage errorValue={touched.phoneNumber && errors.phoneNumber}/>
+                      <ErrorMessage errorValue={touched.newPassword && errors.newPassword}/>
 
                       <Button theme={theme} onPress={handleSubmit}
                               mode="contained"
                               labelStyle={styles.buttonTextColour}>
-                        Save
+                        Change Password
                       </Button>
                       {modalSuccessTextVisible ?
-                        <Text style={styles.appText}>Successfully added your details</Text>
+                        <Text style={styles.appText}>Successfully changed your password.</Text>
                         : undefined}
                     </View>
                   )}

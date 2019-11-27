@@ -62,10 +62,15 @@ export default class Profile extends Component {
     firebase.database()
       .ref('users/' + uid)
       .on('value', (snapshot) => {
-          this.setState({
-            address: snapshot.val().address,
-            phoneNumber: snapshot.val().phoneNumber,
-          })
+          if (snapshot === null || snapshot === undefined) {
+            return;
+          }
+          else {
+            this.setState({
+              address: snapshot.val().address,
+              phoneNumber: snapshot.val().phoneNumber,
+            })
+          }
         },
         (error) => {
           console.log("Error:", error);
@@ -118,10 +123,24 @@ export default class Profile extends Component {
     });
   };
 
-  deleteAccount = (password) => {
-    let user = firebase.auth().currentUser;
-    //let credential = firebase.auth.EmailAuthProvider.credential(user.email, userProvidedPassword);
+  reAuthForSensitiveActions = (user, currentPassword) => {
+    let credential = firebase.auth.EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
 
+    user.reauthenticateWithCredential(credential)
+      .then(() => {
+        console.log('reauthenticated')
+      })
+      .catch((error) => {
+        console.log(error)
+      });
+  };
+
+  deleteAccount = (values) => {
+    let user = firebase.auth().currentUser;
+    this.reAuthForSensitiveActions(user, values.password);
 
     Alert.alert(
       'Delete Account',
@@ -132,7 +151,16 @@ export default class Profile extends Component {
           onPress: () =>
             user.delete()
               .then(() => {
-                this.props.navigation.navigate('Login', {userAccountDeleted: true})
+                firebase.database()
+                  .ref('users/' + user.uid)
+                  .remove()
+                  .then(response => {
+                    console.log('database delete for user account', response)
+                  })
+                  .catch(error => {
+                    console.log('database delete for user account error', error)
+                  });
+                signOut(this.props.navigation, 'You have successfully deleted your account.')
               }).catch((error) => {
               console.log(error)
             })
@@ -141,6 +169,19 @@ export default class Profile extends Component {
       ],
       {cancelable: false}
     );
+  };
+
+  updatePassword = (values) => {
+    let user = firebase.auth().currentUser;
+    this.reAuthForSensitiveActions(user, values.oldPassword);
+
+    user.updatePassword(values.newPassword)
+      .then(() => {
+        signOut(this.props.navigation, 'You have changed your password, please log in again.');
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   };
 
   render() {
@@ -177,11 +218,13 @@ export default class Profile extends Component {
             </Text>
 
             {!address || !phoneNumber ?
-              <Button style={styles.buttonSpacing} theme={theme}
+              <Button style={styles.buttonSpacing}
+                      theme={theme}
                       onPress={() => {
                         this.setAddInfoModalVisible(true)
                       }}
-                      mode='outlined'>
+                      mode='outlined'
+                      disabled={address && phoneNumber}>
                 Add An Address and Phone Number?
               </Button>
               : undefined}
@@ -199,6 +242,7 @@ export default class Profile extends Component {
 
             {changePasswordModalVisible
               ? <ChangePasswordModal
+                updatePassword={this.updatePassword}
                 modalSuccessTextVisible={this.state.modalSuccessTextVisible}
                 setModalVisible={() => this.setChangePasswordModalVisible()}
                 animationType="fade"
@@ -227,7 +271,7 @@ export default class Profile extends Component {
 
             <View>
               <Button style={styles.buttonSpacing} theme={theme}
-                      onPress={() => signOut(navigation)}
+                      onPress={() => signOut(navigation, 'You have logged out.')}
                       mode='contained'
                       labelStyle={styles.buttonTextColour}>
                 Logout

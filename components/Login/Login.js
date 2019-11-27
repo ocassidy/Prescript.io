@@ -87,9 +87,13 @@ export default class Login extends Component {
       .auth()
       .signInWithEmailAndPassword(values.email.trim(), values.password.trim())
       .then((user) => {
-        this.registerUserForPushNotifications(user)
-          .then(r => this.props.navigation.navigate('Profile'))
-          .catch(error => console.log(error));
+        this.setState({
+          error: false,
+        });
+        // this.registerUserForPushNotifications(user)
+        //   .then(r => this.props.navigation.navigate('Profile'))
+        //   .catch(error => console.log(error));
+        this.props.navigation.navigate('Profile');
         this.props.navigation.dispatch(this.resetStack);
       })
       .catch((error) => {
@@ -130,6 +134,8 @@ export default class Login extends Component {
   render() {
     const {theme, navigation} = this.props;
     const {isLoading, authenticated, errorMessage, error} = this.state;
+    this.emailTextInput = React.createRef();
+    this.passwordTextInput = React.createRef();
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         {isLoading && !authenticated
@@ -160,6 +166,7 @@ export default class Login extends Component {
                       onBlur={handleBlur('email')}
                       value={values.email}
                       mode='outlined'
+                      ref={this.emailTextInput}
                     />
                     <ErrorMessage errorValue={touched.email && errors.email}/>
 
@@ -172,6 +179,7 @@ export default class Login extends Component {
                       value={values.password}
                       secureTextEntry={true}
                       mode='outlined'
+                      refs={this.passwordTextInput}
                     />
                     <ErrorMessage errorValue={touched.password && errors.password}/>
 
@@ -195,11 +203,8 @@ export default class Login extends Component {
                 Forgot Password?
               </Button>
 
-              {navigation.state.params !== undefined && navigation.state.params.userAccountDeleted !== undefined
-                ? <Text style={styles.deletedAccountText} theme={theme}>You have deleted you account.</Text>
-                : undefined}
-              {navigation.state.params && navigation.state.params.loggedOut !== undefined
-                ? <Text style={styles.loggedOutText} theme={theme}>You have logged out.</Text>
+              {navigation.state.params && navigation.state.params.signOutMessage !== undefined
+                ? <Text style={styles.loggedOutText} theme={theme}>{navigation.state.params.signOutMessage}</Text>
                 : undefined}
             </View>
           </TouchableWithoutFeedback>}

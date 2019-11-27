@@ -51,6 +51,12 @@ export default styles = StyleSheet.create({
     textAlign: 'center',
     color: 'orange'
   },
+  changedPasswordText: {
+    fontSize: 18,
+    padding: 10,
+    textAlign: 'center',
+    color: 'green'
+  },
   deletedAccountText: {
     fontSize: 18,
     padding: 10,
@@ -69,5 +75,17 @@ export default styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: 5,
     marginBottom: 5
+  },
+  agendaDayMonthText: {
+    fontSize: 18,
+    marginTop: 30,
+    marginBottom: 5,
+    marginRight: 10,
+    marginLeft: 10,
+    textAlign: 'center',
+  },
+  agendaCard: {
+    margin: 10,
+    padding: 5
   },
 });

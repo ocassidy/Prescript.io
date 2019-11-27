@@ -70,14 +70,12 @@ const AppStack = createStackNavigator(
     Profile: {
       screen: DrawerNavigator,
       navigationOptions: ({navigation}) => ({
-        title: 'Profile',
         headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
       })
     },
     Reminders: {
       screen: Reminders,
       navigationOptions: ({navigation}) => ({
-        title: 'Reminders',
         headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
       })
     },

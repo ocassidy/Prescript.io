@@ -12,26 +12,26 @@ export class DrawerNavigatorContent extends Component {
       <SafeAreaView style={styles.container} forceInset={{top: "always", horizontal: "never"}}>
         <ScrollView>
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Profile')}
+                  onPress={() => this.props.navigation.navigate('Profile', {title: 'Profile'})}
                   style={styles.buttonSpacing}
                   icon='account'>
             Profile
           </Button>
 
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Reminders')}
+                  onPress={() => this.props.navigation.navigate('Reminders', {title: 'Reminders'})}
                   style={styles.buttonSpacing}
                   icon='calendar'>
             Reminders
           </Button>
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Prescriptions')}
+                  onPress={() => this.props.navigation.navigate('Prescriptions', {title: 'Reminders'})}
                   style={styles.buttonSpacing}
                   icon='pill'>
             Prescriptions
           </Button>
         </ScrollView>
-        <Button icon='logout' onPress={() => signOut(navigation)}>Logout</Button>
+        <Button icon='logout' onPress={() => signOut(navigation, 'You have logged out.')}>Logout</Button>
       </SafeAreaView>
     );
   }

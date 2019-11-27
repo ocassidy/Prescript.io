@@ -24,9 +24,9 @@ export function sendRegistrationEmail (user) {
   });
 }
 
-export function signOut(navigation) {
+export function signOut(navigation, signOutMessage) {
   firebase.auth().signOut().then(() => {
-    navigation.navigate('Login', {loggedOut: true})
+    navigation.navigate('Login', {signOutMessage: signOutMessage})
   }).catch((error) => {
     console.log(error);
     return error

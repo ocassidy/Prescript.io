@@ -17,7 +17,15 @@ import {ErrorMessage} from "../common/ErrorMessage";
 import styles from '../themes/styles';
 
 const ModalSchema = Yup.object().shape({
-  password: Yup.string()
+  oldPassword: Yup.string()
+    .min(6, 'Password must have at least 6 characters')
+    .max(50, 'Password must not be more than 50 characters')
+    .required('Required'),
+  newPassword: Yup.string()
+    .min(6, 'Password must have at least 6 characters')
+    .max(50, 'Password must not be more than 50 characters')
+    .required('Required'),
+  confirmPassword: Yup.string().oneOf([Yup.ref('newPassword'), null], "Passwords must match")
     .min(6, 'Password must have at least 6 characters')
     .max(50, 'Password must not be more than 50 characters')
     .required('Required'),
@@ -35,7 +43,7 @@ export default class AddInfoModal extends Component {
   }
 
   render() {
-    const {theme, setModalVisible, saveUserDetailsAddressAndPhoneNumber, visible, modalSuccessTextVisible} = this.props;
+    const {theme, setModalVisible, visible, modalSuccessTextVisible, updatePassword} = this.props;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <View style={styles.inner}>
@@ -50,8 +58,8 @@ export default class AddInfoModal extends Component {
               <View>
                 <Text style={styles.appText}>You can change you password below.</Text>
 
-                <Formik initialValues={{newPassword: ''}}
-                        onSubmit={values => saveUserDetailsAddressAndPhoneNumber(values)}
+                <Formik initialValues={{oldPassword: '', newPassword: '', confirmPassword: ''}}
+                        onSubmit={values => updatePassword(values)}
                         validationSchema={ModalSchema}>
                   {({
                       handleChange,
@@ -66,13 +74,36 @@ export default class AddInfoModal extends Component {
                     <View>
                       <TextInput
                         theme={theme}
+                        placeholder="Old Password"
+                        onChangeText={handleChange('oldPassword')}
+                        onBlur={handleBlur('oldPassword')}
+                        value={values.oldPassword}
+                        mode='outlined'
+                        secureTextEntry={true}
+                      />
+                      <ErrorMessage errorValue={touched.oldPassword && errors.oldPassword}/>
+
+                      <TextInput
+                        theme={theme}
                         placeholder="New Password"
                         onChangeText={handleChange('newPassword')}
                         onBlur={handleBlur('newPassword')}
                         value={values.newPassword}
                         mode='outlined'
+                        secureTextEntry={true}
                       />
                       <ErrorMessage errorValue={touched.newPassword && errors.newPassword}/>
+
+                      <TextInput
+                        theme={theme}
+                        placeholder="Confirm Password"
+                        onChangeText={handleChange('confirmPassword')}
+                        onBlur={handleBlur('confirmPassword')}
+                        value={values.confirmPassword}
+                        mode='outlined'
+                        secureTextEntry={true}
+                      />
+                      <ErrorMessage errorValue={touched.confirmPassword && errors.confirmPassword}/>
 
                       <Button theme={theme} onPress={handleSubmit}
                               mode="contained"

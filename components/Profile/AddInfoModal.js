@@ -19,6 +19,7 @@ import styles from '../themes/styles';
 const ModalSchema = Yup.object().shape({
   address: Yup.string()
     .label('Phone Number')
+    .min(15)
     .required('Required'),
   phoneNumber: Yup.string()
     .label('Phone Number')

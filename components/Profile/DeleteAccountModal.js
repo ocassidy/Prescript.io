@@ -68,6 +68,7 @@ export default class AddInfoModal extends Component {
                         onBlur={handleBlur('password')}
                         value={values.password}
                         mode='outlined'
+                        secureTextEntry={true}
                       />
                       <ErrorMessage errorValue={touched.password && errors.password}/>
 

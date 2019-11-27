@@ -1,6 +1,5 @@
 import color from 'color';
 import { black, white, pinkA400 } from 'react-native-paper';
-import {configureFonts} from 'react-native-paper';
 
 const CustomTheme = {
   dark: false,
@@ -14,6 +13,7 @@ const CustomTheme = {
     text: black,
     onBackground: '#000000',
     onSurface: '#000000',
+    arrowColor: 'black',
     disabled: color(black)
       .alpha(0.26)
       .rgb()

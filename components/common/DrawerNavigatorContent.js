@@ -13,14 +13,14 @@ export class DrawerNavigatorContent extends Component {
         <ScrollView>
           <Button theme={theme}
                   onPress={() => this.props.navigation.navigate('Profile', {title: 'Profile'})}
-                  style={styles.buttonSpacing}
+                  style={styles.drawerButtonSpacing}
                   icon='account'>
             Profile
           </Button>
 
           <Button theme={theme}
                   onPress={() => this.props.navigation.navigate('Reminders', {title: 'Reminders'})}
-                  style={styles.buttonSpacing}
+                  style={styles.drawerButtonSpacing}
                   icon='calendar'>
             Reminders
           </Button>
@@ -31,7 +31,10 @@ export class DrawerNavigatorContent extends Component {
             Prescriptions
           </Button>
         </ScrollView>
-        <Button icon='logout' onPress={() => signOut(navigation, 'You have logged out.')}>Logout</Button>
+        <Button icon='logout'
+                style={styles.buttonSpacing}
+                onPress={() => signOut(navigation, 'You have logged out.')}>
+          Logout</Button>
       </SafeAreaView>
     );
   }

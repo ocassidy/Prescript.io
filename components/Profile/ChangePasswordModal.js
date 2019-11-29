@@ -107,6 +107,7 @@ export default class AddInfoModal extends Component {
 
                       <Button theme={theme} onPress={handleSubmit}
                               mode="contained"
+                              style={styles.buttonSpacing}
                               labelStyle={styles.buttonTextColour}>
                         Change Password
                       </Button>

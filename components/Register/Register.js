@@ -170,6 +170,7 @@ export default class Register extends Component {
                           onPress={handleSubmit}
                           disabled={!isValid || isSubmitting}
                           mode="contained"
+                          style={styles.buttonSpacing}
                           labelStyle={styles.buttonTextColour}>
                     Register
                   </Button>

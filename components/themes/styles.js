@@ -45,6 +45,11 @@ export default styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center'
   },
+  modalText: {
+    fontSize: 16,
+    padding: 12,
+    textAlign: 'center'
+  },
   loggedOutText: {
     fontSize: 18,
     padding: 10,
@@ -65,6 +70,14 @@ export default styles = StyleSheet.create({
   },
   buttonSpacing: {
     marginTop: 10,
+    marginBottom: 10
+  },
+  drawerButtonSpacing: {
+    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 10,
+    marginLeft: 'auto',
+    marginRight: 'auto'
   },
   buttonTextColour: {
     color: 'white'
@@ -105,7 +118,9 @@ export default styles = StyleSheet.create({
   },
   agendaItemText: {
     marginLeft: 15,
-    fontSize: 18
+    marginBottom: 10,
+    marginTop: 10,
+    fontSize: 16
   },
   agendaEmptyDate: {
     backgroundColor: "white",
@@ -114,5 +129,11 @@ export default styles = StyleSheet.create({
     padding: 10,
     marginRight: 10,
     marginTop: 18
-  }
+  },
+  reminderModalDateText: {
+    fontSize: 20,
+    padding: 10,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
 });

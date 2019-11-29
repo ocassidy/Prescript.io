@@ -2,19 +2,10 @@ import React, {Component} from 'react';
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack'
 import {createDrawerNavigator} from 'react-navigation-drawer';
-import {
-  View,
-  Image
-} from 'react-native'
-import {
-  AppLoading,
-  SplashScreen,
-} from 'expo';
+import {View, Image, YellowBox} from 'react-native'
+import {AppLoading, SplashScreen,} from 'expo';
 import {Asset} from "expo-asset";
-import {
-  Provider as PaperProvider,
-  IconButton
-} from 'react-native-paper';
+import {Provider as PaperProvider, IconButton} from 'react-native-paper';
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Profile from "./components/Profile/Profile";
@@ -102,6 +93,7 @@ const theme = {
   ...CustomTheme,
 };
 
+YellowBox.ignoreWarnings(['Setting a timer for a long']);
 export default class App extends Component {
   constructor(props) {
     super(props);

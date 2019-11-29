@@ -6,6 +6,7 @@ import styles from "../themes/styles";
 import moment from "moment";
 import * as firebase from "firebase";
 import {db} from "../../firebaseConfig";
+import AddReminderModal from "./AddReminderModal";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Reminders extends Component {
@@ -13,7 +14,9 @@ export default class Reminders extends Component {
     super(props);
     this.state = {
       items: {},
-      today: null
+      today: null,
+      addReminderModalVisible: false,
+      modalSuccessTextVisible: false,
     };
   }
 
@@ -31,9 +34,8 @@ export default class Reminders extends Component {
       .doc(user.uid)
       .get()
       .then(document => {
-        const {reminders} = document._document.proto.fields;
         this.setState({
-          items: this.parseReminderData(reminders)
+          items: document.get('reminders')
         })
       })
       .catch(error => {
@@ -41,22 +43,49 @@ export default class Reminders extends Component {
       });
   };
 
-  parseReminderData = (data) => {
-    const {values} = data.arrayValue;
-    values.forEach(mapValue => {
-      console.log(JSON.stringify(mapValue))
-    })
+  handleAddReminder = (values, pickedDate) => {
+    let user = firebase.auth().currentUser;
+    let {medicine} = values;
+    if (pickedDate !== '' && pickedDate !== null && medicine) {
+      let reminders = {
+        [pickedDate]: [values],
+      };
+      let data = {
+        reminders
+      };
+
+      db.collection('users')
+        .doc(user.uid)
+        .set(data, {merge: true})
+        .then(response => {
+          this.setState({
+            modalSuccessTextVisible: true
+          });
+          console.log('successful add of reminder(s) on user id', user.uid)
+        })
+        .catch(error => console.log('unsuccessful add of add of reminder(s) to user', user.uid, 'with', error));
+    } else {
+      this.setState({
+        error: true,
+        errorMessage: 'Invalid Data'
+      });
+    }
+    this.loadItems();
   };
 
   renderItem(items) {
-    console.log('items', items);
+    const {medicine, medicine2, medicine3, reminderNote} = items;
+    const {theme} = this.props;
     return (
       <View style={styles.agendaItem}>
-        <Text theme={this.props.theme} style={styles.agendaItemText}>{items}</Text>
+        <Text theme={theme} style={styles.agendaItemText}>Medicine: {medicine}</Text>
+        {medicine2 ? <Text theme={theme} style={styles.agendaItemText}>Medicine 2: {medicine2}</Text> : undefined}
+        {medicine3 ? <Text theme={theme} style={styles.agendaItemText}>Medicine 3: {medicine3}</Text> : undefined}
+        <Text theme={theme} style={styles.agendaItemText}>Note: {reminderNote}</Text>
         <View style={styles.agendaItemButtonView}>
-          <Button theme={this.props.theme} style={styles.agendaButtonText}
+          <Button theme={theme} style={styles.agendaButtonText}
                   onPress={() => this.editAgendaItem}>Edit</Button>
-          <Button theme={this.props.theme} style={styles.agendaButtonText}
+          <Button theme={theme} style={styles.agendaButtonText}
                   onPress={() => this.deleteAgendaItem}>Delete</Button>
         </View>
       </View>
@@ -75,14 +104,12 @@ export default class Reminders extends Component {
     return r1.name !== r2.name;
   }
 
-  handleAddReminder = () => {
-    let user = firebase.auth().currentUser;
-
-    this.addReminder(user);
-  };
-
-  addReminder = (user) => {
-
+  setAddReminderModalVisible = (visible) => {
+    if (visible) {
+      this.setState({addReminderModalVisible: true, modalSuccessTextVisible: false});
+    } else {
+      this.setState({addReminderModalVisible: false, modalSuccessTextVisible: false});
+    }
   };
 
   editAgendaItem = (item) => {
@@ -95,6 +122,7 @@ export default class Reminders extends Component {
 
   render() {
     const {theme} = this.props;
+    const {addReminderModalVisible} = this.state;
     return (
       <View style={{flex: 1}}>
         <Agenda
@@ -104,12 +132,21 @@ export default class Reminders extends Component {
           renderItem={this.renderItem.bind(this)}
           renderEmptyDate={this.renderEmptyDate.bind(this)}
           rowHasChanged={this.rowHasChanged.bind(this)}
-          onDayPress={day => {
-            console.log("selected day", day)
-          }}
+          renderEmptyData={this.renderEmptyDate.bind(this)}
         />
 
-        <Button theme={theme} style={styles.addReminderText} onPress={() => this.handleAddReminder}>Add
+        {addReminderModalVisible
+          ? <AddReminderModal
+            handleAddReminder={this.handleAddReminder}
+            modalSuccessTextVisible={this.state.modalSuccessTextVisible}
+            setModalVisible={() => this.setAddReminderModalVisible()}
+            animationType="fade"
+            transparent={false}
+            onRequestClose={() => this.setAddReminderModalVisible()}>
+          </AddReminderModal>
+          : undefined}
+
+        <Button theme={theme} style={styles.addReminderText} onPress={() => this.setAddReminderModalVisible(true)}>Add
           Reminder</Button>
       </View>
     );

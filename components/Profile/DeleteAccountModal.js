@@ -76,6 +76,7 @@ export default class AddInfoModal extends Component {
                               onPress={handleSubmit}
                               mode="contained"
                               color={'red'}
+                              style={styles.buttonSpacing}
                               labelStyle={styles.buttonTextColour}>
                         Delete Account
                       </Button>

@@ -84,8 +84,35 @@ export default styles = StyleSheet.create({
     marginLeft: 10,
     textAlign: 'center',
   },
-  agendaCard: {
-    margin: 10,
-    padding: 5
+  agendaItem: {
+    backgroundColor: "white",
+    flex: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+    marginTop: 18
   },
+  agendaItemButtonView: {
+    flexDirection: 'row',
+    marginRight: 'auto'
+  },
+  addReminderText: {
+    textAlign: 'center',
+    fontSize: 18
+  },
+  agendaButtonText: {
+    fontSize: 18
+  },
+  agendaItemText: {
+    marginLeft: 15,
+    fontSize: 18
+  },
+  agendaEmptyDate: {
+    backgroundColor: "white",
+    flex: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+    marginTop: 18
+  }
 });

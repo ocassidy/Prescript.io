@@ -18,11 +18,12 @@ import styles from '../themes/styles';
 
 const ModalSchema = Yup.object().shape({
   address: Yup.string()
-    .label('Phone Number')
-    .min(15)
+    .label('Address')
+    .min(4)
     .required('Required'),
   phoneNumber: Yup.string()
     .label('Phone Number')
+    .min(11)
     .required('Please enter a valid Phone Number'),
 });
 
@@ -95,7 +96,7 @@ export default class AddInfoModal extends Component {
                         Save
                       </Button>
                       {modalSuccessTextVisible ?
-                        <Text style={styles.appText}>Successfully added your details</Text>
+                        <Text style={styles.appText}>Successfully added your details. Press close to return to you profile.</Text>
                         : undefined}
                     </View>
                   )}

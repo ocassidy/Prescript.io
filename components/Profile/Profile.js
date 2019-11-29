@@ -17,6 +17,7 @@ import IsLoadingSpinner from "../common/IsLoadingSpinner";
 import {sendRegistrationEmail, signOut} from "../common/utils";
 import ChangePasswordModal from "./ChangePasswordModal";
 import DeleteAccountModal from "./DeleteAccountModal";
+import {db} from "../../firebaseConfig";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Profile extends Component {
@@ -59,23 +60,18 @@ export default class Profile extends Component {
       uid = this.state.uid
     }
 
-    firebase.database()
-      .ref('users/' + uid)
-      .on('value', (snapshot) => {
-          if (snapshot === null || snapshot === undefined) {
-            return;
-          }
-          else {
-            this.setState({
-              address: snapshot.val().address,
-              phoneNumber: snapshot.val().phoneNumber,
-            })
-          }
-        },
-        (error) => {
-          console.log("Error:", error);
-        }
-      );
+    db.collection('users')
+      .doc(uid)
+      .get()
+      .then(document => {
+        this.setState({
+          address: document._document.proto.fields.address.stringValue,
+          phoneNumber: document._document.proto.fields.phoneNumber.stringValue
+        })
+      })
+      .catch(error => {
+        console.log('failed to retrieve address or phoneNumber', error)
+      });
   };
 
   setAddInfoModalVisible = (visible) => {
@@ -102,25 +98,27 @@ export default class Profile extends Component {
     }
   };
 
-  saveUserDetailsAddressAndPhoneNumber = (values) => {
+  saveUserDetailsAddressAndPhoneNumber = async (values) => {
     const {uid} = this.state.user;
     const {address, phoneNumber} = values;
 
-    firebase
-      .database()
-      .ref('users/' + uid)
-      .update({
-        address,
-        phoneNumber
-      })
+    let data = {
+      address: address.trim(),
+      phoneNumber: phoneNumber.trim(),
+    };
+
+    db.collection('users')
+      .doc(uid)
+      .update(data)
       .then(response => {
-        console.log('database response ', response);
         this.setState({
           modalSuccessTextVisible: true
-        })
-      }).catch((error) => {
-      console.log('error ', error);
-    });
+        });
+        console.log('successful add of address/phoneNumber to user on id', response)
+      })
+      .catch(error => console.log('unsuccessful add of address/phoneNumber to user', uid, error));
+
+    await this.getUserData(uid);
   };
 
   reAuthForSensitiveActions = (user, currentPassword) => {
@@ -151,15 +149,13 @@ export default class Profile extends Component {
           onPress: () =>
             user.delete()
               .then(() => {
-                firebase.database()
-                  .ref('users/' + user.uid)
-                  .remove()
+                db.collection('users')
+                  .doc(user.uid)
+                  .delete()
                   .then(response => {
-                    console.log('database delete for user account', response)
+                    console.log('successful delete of user', user.uid, response)
                   })
-                  .catch(error => {
-                    console.log('database delete for user account error', error)
-                  });
+                  .catch(error => console.log('unsuccessful delete of user', user.uid, error));
                 signOut(this.props.navigation, 'You have successfully deleted your account.')
               }).catch((error) => {
               console.log(error)

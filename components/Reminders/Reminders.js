@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
-import {View, YellowBox, StyleSheet} from 'react-native'
-import {Button, Card, Divider, IconButton, Paragraph, Text, Title} from 'react-native-paper';
-import * as Calendar from 'expo-calendar';
-import * as Permissions from 'expo-permissions';
+import {View, YellowBox} from 'react-native'
+import {Button, Text} from 'react-native-paper';
 import {Agenda} from 'react-native-calendars';
+import styles from "../themes/styles";
 import moment from "moment";
+import * as firebase from "firebase";
+import {db} from "../../firebaseConfig";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Reminders extends Component {
@@ -12,85 +13,60 @@ export default class Reminders extends Component {
     super(props);
     this.state = {
       items: {},
-      today: new Date().toISOString().split("T")[0]
+      today: null
     };
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.isFocused !== this.props.isFocused) {
-      setTimeout(() => {
-        this.agenda.onDayChange(this.state.today);
-      }, 500);
-    }
+  componentDidMount() {
+    this.setState({
+      today: moment()
+    });
+    this.loadItems();
   }
 
-  render() {
-    return (
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{ padding: 30, fontWeight: "bold", textAlign: "center" }}
-          onPress={() => this.props.navigation.navigate("NewScreen")}
-        >
-          Go To Next Screen
-        </Text>
-        <Agenda
-          items={this.state.items}
-          loadItemsForMonth={this.loadItems.bind(this)}
-          selected={this.state.today}
-          renderItem={this.renderItem.bind(this)}
-          renderEmptyDate={this.renderEmptyDate.bind(this)}
-          rowHasChanged={this.rowHasChanged.bind(this)}
-          onDayPress={day => {
-            console.log("selected day", day);
-          }}
-          ref={ref => {
-            this.agenda = ref;
-          }}
-        />
-      </View>
-    );
-  }
+  loadItems = (day) => {
+    let user = firebase.auth().currentUser;
 
-  loadItems(day) {
-    setTimeout(() => {
-      for (let i = -15; i < 85; i++) {
-        const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-        const strTime = this.timeToString(time);
-        if (!this.state.items[strTime]) {
-          this.state.items[strTime] = [];
-          const numItems = Math.floor(Math.random() * 5);
-          for (let j = 0; j < numItems; j++) {
-            this.state.items[strTime].push({
-              name: "Item for " + strTime,
-              height: Math.max(50, Math.floor(Math.random() * 150))
-            });
-          }
-        }
-      }
-      //console.log(this.state.items);
-      const newItems = {};
-      Object.keys(this.state.items).forEach(key => {
-        newItems[key] = this.state.items[key];
+    db.collection('users')
+      .doc(user.uid)
+      .get()
+      .then(document => {
+        const {reminders} = document._document.proto.fields;
+        this.setState({
+          items: this.parseReminderData(reminders)
+        })
+      })
+      .catch(error => {
+        console.log('failed to retrieve reminder items', error.message)
       });
-      this.setState({
-        items: newItems
-      });
-    }, 1000);
-    // console.log(`Load Items for ${day.year}-${day.month}`);
-  }
+  };
 
-  renderItem(item) {
+  parseReminderData = (data) => {
+    const {values} = data.arrayValue;
+    values.forEach(mapValue => {
+      console.log(JSON.stringify(mapValue))
+    })
+  };
+
+  renderItem(items) {
+    console.log('items', items);
     return (
-      <View style={[styles.item, { height: item.height }]}>
-        <Text>{item.name}</Text>
+      <View style={styles.agendaItem}>
+        <Text theme={this.props.theme} style={styles.agendaItemText}>{items}</Text>
+        <View style={styles.agendaItemButtonView}>
+          <Button theme={this.props.theme} style={styles.agendaButtonText}
+                  onPress={() => this.editAgendaItem}>Edit</Button>
+          <Button theme={this.props.theme} style={styles.agendaButtonText}
+                  onPress={() => this.deleteAgendaItem}>Delete</Button>
+        </View>
       </View>
     );
   }
 
   renderEmptyDate() {
     return (
-      <View style={styles.emptyDate}>
-        <Text>This is empty date!</Text>
+      <View style={styles.agendaEmptyDate}>
+        <Text theme={this.props.theme} style={styles.agendaItemText}>There are no events on this date</Text>
       </View>
     );
   }
@@ -99,24 +75,43 @@ export default class Reminders extends Component {
     return r1.name !== r2.name;
   }
 
-  timeToString(time) {
-    const date = new Date(time);
-    return date.toISOString().split("T")[0];
+  handleAddReminder = () => {
+    let user = firebase.auth().currentUser;
+
+    this.addReminder(user);
+  };
+
+  addReminder = (user) => {
+
+  };
+
+  editAgendaItem = (item) => {
+
+  };
+
+  deleteAgendaItem = (item) => {
+
+  };
+
+  render() {
+    const {theme} = this.props;
+    return (
+      <View style={{flex: 1}}>
+        <Agenda
+          items={this.state.items}
+          loadItemsForMonth={this.loadItems.bind(this)}
+          selected={this.state.today}
+          renderItem={this.renderItem.bind(this)}
+          renderEmptyDate={this.renderEmptyDate.bind(this)}
+          rowHasChanged={this.rowHasChanged.bind(this)}
+          onDayPress={day => {
+            console.log("selected day", day)
+          }}
+        />
+
+        <Button theme={theme} style={styles.addReminderText} onPress={() => this.handleAddReminder}>Add
+          Reminder</Button>
+      </View>
+    );
   }
 }
-
-const styles = StyleSheet.create({
-  item: {
-    backgroundColor: "white",
-    flex: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-    marginTop: 17
-  },
-  emptyDate: {
-    height: 15,
-    flex: 1,
-    paddingTop: 30
-  }
-});

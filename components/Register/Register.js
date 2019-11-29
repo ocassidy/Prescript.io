@@ -18,13 +18,14 @@ import {
 } from 'react-native-paper';
 import styles from '../themes/styles';
 import {sendRegistrationEmail} from "../common/utils";
+import {db} from "../../firebaseConfig";
 
 const RegisterSchema = Yup.object().shape({
   firstName: Yup.string()
-    .min(5, 'Must Be At Least 5 Characters')
+    .min(2, 'Must Be At Least 2 Characters')
     .required('Please enter your First Name'),
   lastName: Yup.string()
-    .min(5, 'Must Be At Least 5 Characters')
+    .min(2, 'Must Be At Least 2 Characters')
     .required('Please enter your Last Name'),
   email: Yup.string()
     .label('Email')
@@ -66,35 +67,33 @@ export default class Register extends Component {
   saveUserDetailsToDatabaseAndUpdateDisplayName = (user, values) => {
     const {firstName, lastName, email, username} = values;
 
-    firebase
-      .database()
-      .ref('users/' + user.uid)
-      .set({
-        firstName,
-        lastName,
-        email,
-        username
-      })
-      .then(response => {
-        console.log('database response ', response);
-      }).catch((error) => {
-      console.log('error ', error);
-    });
+    let data = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      username: username.trim()
+    };
+
+    db.collection('users')
+      .doc(user.uid)
+      .set(data)
+      .then(ref => console.log('successful add to users on uid', user.uid))
+      .catch(error => console.log('unsuccessful add to users', error));
 
     user.updateProfile({
       displayName: username
-    }).then(response => {
-      console.log('update profile response ', response);
-    }, function (error) {
-      console.log(error);
-    });
+    }).then(response => console.log('user.updateProfile success'))
+      .catch(error => console.log('user.updateProfile error', error));
   };
 
   render() {
     const {navigate} = this.props.navigation;
     const {theme} = this.props;
     return (
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
+      <KeyboardAvoidingView style={styles.container}
+                            behavior={Platform.OS === "ios" ? "padding" : null}
+                            keyboardVerticalOffset={300}
+                            enabled>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.inner}>
             <Text style={styles.appTitle}>

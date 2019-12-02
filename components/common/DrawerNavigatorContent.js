@@ -26,13 +26,13 @@ export class DrawerNavigatorContent extends Component {
           </Button>
           <Button theme={theme}
                   onPress={() => this.props.navigation.navigate('Prescriptions', {title: 'Reminders'})}
-                  style={styles.buttonSpacing}
+                  style={styles.drawerButtonSpacing}
                   icon='pill'>
             Prescriptions
           </Button>
         </ScrollView>
         <Button icon='logout'
-                style={styles.buttonSpacing}
+                style={styles.drawerButtonSpacing}
                 onPress={() => signOut(navigation, 'You have logged out.')}>
           Logout</Button>
       </SafeAreaView>

@@ -187,7 +187,7 @@ export default class Profile extends Component {
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         {user
           ? <View style={styles.inner}>
-            {user.displayName ? <Text style={styles.appText} theme={theme}>Hi {user.displayName}!</Text> : undefined}
+            {user.displayName ? <Text style={styles.appText} theme={theme}>Hi {user.displayName}!</Text> : null}
             <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
             <Text style={styles.appText} theme={theme}>Your details:</Text>
             <Text style={styles.appText} theme={theme}>Your current email
@@ -203,14 +203,14 @@ export default class Profile extends Component {
                         mode='outlined'>
                 Resend Password Verification
               </Button>
-              : undefined}
+              : null}
 
             <Text style={styles.appText} theme={theme}>
-              Your address {address ? 'is' : 'is not set'} {address ? address : undefined}.
+              Your address {address ? 'is' : 'is not set'} {address ? address : null}.
             </Text>
 
             <Text style={styles.appText} theme={theme}>
-              Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : undefined}.
+              Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : null}.
             </Text>
 
             {!address || !phoneNumber ?
@@ -223,7 +223,7 @@ export default class Profile extends Component {
                       disabled={address && phoneNumber}>
                 Add An Address and Phone Number?
               </Button>
-              : undefined}
+              : null}
 
             {addInfoModalVisible
               ? <AddInfoModal
@@ -234,7 +234,7 @@ export default class Profile extends Component {
                 transparent={false}
                 onRequestClose={() => this.setAddInfoModalVisible()}>
               </AddInfoModal>
-              : undefined}
+              : null}
 
             {changePasswordModalVisible
               ? <ChangePasswordModal
@@ -245,7 +245,7 @@ export default class Profile extends Component {
                 transparent={false}
                 onRequestClose={() => this.setChangePasswordModalVisible()}>
               </ChangePasswordModal>
-              : undefined}
+              : null}
 
             {deleteAccountModalVisible
               ? <DeleteAccountModal

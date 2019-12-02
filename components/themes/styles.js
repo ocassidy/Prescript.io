@@ -76,7 +76,6 @@ export default styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     marginBottom: 10,
-    marginLeft: 'auto',
     marginRight: 'auto'
   },
   buttonTextColour: {
@@ -103,20 +102,13 @@ export default styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
-    marginTop: 18
+    marginTop: 18,
   },
   agendaItemButtonView: {
     flexDirection: 'row',
     marginRight: 'auto'
   },
-  addReminderText: {
-    textAlign: 'center',
-    fontSize: 18
-  },
-  agendaButtonText: {
-    fontSize: 18
-  },
-  agendaItemText: {
+  agendaItemInner: {
     marginLeft: 15,
     marginBottom: 10,
     marginTop: 10,
@@ -136,4 +128,15 @@ export default styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center'
   },
+  modalDateCheckBoxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 'auto',
+    marginLeft: 'auto'
+  },
+  deleteReminderModalInnerScroll: {
+    alignItems: 'center',
+  }
 });

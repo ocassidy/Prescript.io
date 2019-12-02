@@ -13,6 +13,7 @@ import ResetPassword from "./components/ResetPassword/ResetPassword";
 import CustomTheme from './components/themes/CustomTheme';
 import Reminders from './components/Reminders/Reminders'
 import {DrawerNavigatorContent} from "./components/common/DrawerNavigatorContent";
+import Prescriptions from "./components/Prescriptions/Prescriptions";
 
 const DrawerNavigator = createDrawerNavigator(
   {
@@ -22,9 +23,12 @@ const DrawerNavigator = createDrawerNavigator(
     Reminders: {
       screen: Reminders,
     },
+    Prescriptions: {
+      screen: Prescriptions,
+    },
   },
   {
-    drawerWidth: 250,
+    drawerWidth: 175,
     drawerPosition: 'left',
     initialRouteName: 'Profile',
     contentComponent: DrawerNavigatorContent
@@ -66,6 +70,12 @@ const AppStack = createStackNavigator(
     },
     Reminders: {
       screen: Reminders,
+      navigationOptions: ({navigation}) => ({
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
+    },
+    Prescriptions: {
+      screen: Prescriptions,
       navigationOptions: ({navigation}) => ({
         headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
       })

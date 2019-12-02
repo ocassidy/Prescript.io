@@ -1,35 +1,35 @@
 import React, {Component} from 'react';
 import {View, YellowBox} from 'react-native'
-import {Button, Text} from 'react-native-paper';
+import {Button, Checkbox, Text} from 'react-native-paper';
 import {Agenda} from 'react-native-calendars';
 import styles from "../themes/styles";
 import moment from "moment";
 import * as firebase from "firebase";
 import {db} from "../../firebaseConfig";
-import AddReminderModal from "./AddReminderModal";
+import AddEditReminderModal from "./AddEditReminderModal";
+import DeleteReminderModal from "./DeleteReminderModal";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 export default class Reminders extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      items: {},
-      today: null,
-      addReminderModalVisible: false,
+      items: null,
+      today: moment().format('YYYY-MM-DD'),
+      addEditReminderModalVisible: false,
       modalSuccessTextVisible: false,
+      deleteItemSuccess: false,
+      deleteItemSuccessText: '',
+      selectedAgendaItem: null
     };
   }
 
   componentDidMount() {
-    this.setState({
-      today: moment()
-    });
     this.loadItems();
   }
 
-  loadItems = (day) => {
+  loadItems = () => {
     let user = firebase.auth().currentUser;
-
     db.collection('users')
       .doc(user.uid)
       .get()
@@ -43,7 +43,7 @@ export default class Reminders extends Component {
       });
   };
 
-  handleAddReminder = (values, pickedDate) => {
+  handleAddEditReminder = (values, pickedDate) => {
     let user = firebase.auth().currentUser;
     let {medicine} = values;
     if (pickedDate !== '' && pickedDate !== null && medicine) {
@@ -73,21 +73,62 @@ export default class Reminders extends Component {
     this.loadItems();
   };
 
-  renderItem(items) {
-    const {medicine, medicine2, medicine3, reminderNote} = items;
+  rowHasChanged(r1, r2) {
+    return r1.name !== r2.name;
+  }
+
+  setAddEditReminderModalVisible = (visible) => {
+    if (visible) {
+      this.setState({addEditReminderModalVisible: true, modalSuccessTextVisible: false});
+    } else {
+      this.setState({addEditReminderModalVisible: false, modalSuccessTextVisible: false});
+    }
+  };
+
+  setDeleteReminderModalVisible = (visible) => {
+    if (visible) {
+      this.setState({deleteReminderModalVisible: true, modalSuccessTextVisible: false});
+    } else {
+      this.setState({deleteReminderModalVisible: false, modalSuccessTextVisible: false});
+    }
+  };
+
+  handleDeleteReminder = (date) => {
+    let user = firebase.auth().currentUser;
+
+    db.collection('users')
+      .doc(user.uid)
+      .set({
+        reminders: {
+          [date]: firebase.firestore.FieldValue.delete()
+        }
+      }, {merge: true})
+      .then(response => {
+        this.setState({
+          deleteItemSuccess: true,
+          deleteItemSuccessText: 'Successfully deleted item'
+        });
+        this.setDeleteReminderModalVisible(false);
+        console.log('successful delete of reminder', date, 'on user id', user.uid)
+      })
+      .catch(error => console.log('unsuccessful delete of reminder', date, 'on user id', user.uid, 'with', error));
+
+    this.loadItems();
+  };
+
+  editAgendaItem = () => {
+
+  };
+
+  renderItem(item) {
+    const {medicine, medicine2, medicine3, reminderNote} = item;
     const {theme} = this.props;
     return (
       <View style={styles.agendaItem}>
-        <Text theme={theme} style={styles.agendaItemText}>Medicine: {medicine}</Text>
-        {medicine2 ? <Text theme={theme} style={styles.agendaItemText}>Medicine 2: {medicine2}</Text> : undefined}
-        {medicine3 ? <Text theme={theme} style={styles.agendaItemText}>Medicine 3: {medicine3}</Text> : undefined}
-        <Text theme={theme} style={styles.agendaItemText}>Note: {reminderNote}</Text>
-        <View style={styles.agendaItemButtonView}>
-          <Button theme={theme} style={styles.agendaButtonText}
-                  onPress={() => this.editAgendaItem}>Edit</Button>
-          <Button theme={theme} style={styles.agendaButtonText}
-                  onPress={() => this.deleteAgendaItem}>Delete</Button>
-        </View>
+        <Text theme={theme} style={styles.agendaItemInner}>Medicine: {medicine}</Text>
+        {medicine2 ? <Text theme={theme} style={styles.agendaItemInner}>Medicine 2: {medicine2}</Text> : undefined}
+        {medicine3 ? <Text theme={theme} style={styles.agendaItemInner}>Medicine 3: {medicine3}</Text> : undefined}
+        <Text theme={theme} style={styles.agendaItemInner}>Note: {reminderNote}</Text>
       </View>
     );
   }
@@ -95,59 +136,68 @@ export default class Reminders extends Component {
   renderEmptyDate() {
     return (
       <View style={styles.agendaEmptyDate}>
-        <Text theme={this.props.theme} style={styles.agendaItemText}>There are no events on this date</Text>
+        <Text theme={this.props.theme} style={styles.agendaItemInner}>There are no events on this date</Text>
       </View>
     );
   }
 
-  rowHasChanged(r1, r2) {
-    return r1.name !== r2.name;
-  }
-
-  setAddReminderModalVisible = (visible) => {
-    if (visible) {
-      this.setState({addReminderModalVisible: true, modalSuccessTextVisible: false});
-    } else {
-      this.setState({addReminderModalVisible: false, modalSuccessTextVisible: false});
-    }
-  };
-
-  editAgendaItem = (item) => {
-
-  };
-
-  deleteAgendaItem = (item) => {
-
-  };
-
   render() {
     const {theme} = this.props;
-    const {addReminderModalVisible} = this.state;
+    const {today, items, modalSuccessTextVisible, addEditReminderModalVisible, deleteReminderModalVisible} = this.state;
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         <Agenda
-          items={this.state.items}
+          items={items}
           loadItemsForMonth={this.loadItems.bind(this)}
-          selected={this.state.today}
-          renderItem={this.renderItem.bind(this)}
+          selected={today}
+          renderItem={(item) => this.renderItem(item)}
           renderEmptyDate={this.renderEmptyDate.bind(this)}
           rowHasChanged={this.rowHasChanged.bind(this)}
           renderEmptyData={this.renderEmptyDate.bind(this)}
         />
 
-        {addReminderModalVisible
-          ? <AddReminderModal
-            handleAddReminder={this.handleAddReminder}
-            modalSuccessTextVisible={this.state.modalSuccessTextVisible}
-            setModalVisible={() => this.setAddReminderModalVisible()}
+        {addEditReminderModalVisible
+          ? <AddEditReminderModal
+            handleAddEditReminder={this.handleAddEditReminder}
+            modalSuccessTextVisible={modalSuccessTextVisible}
+            setModalVisible={() => this.setAddEditReminderModalVisible()}
             animationType="fade"
             transparent={false}
-            onRequestClose={() => this.setAddReminderModalVisible()}>
-          </AddReminderModal>
-          : undefined}
+            onRequestClose={() => this.setAddEditReminderModalVisible()}>
+          </AddEditReminderModal>
+          : null}
 
-        <Button theme={theme} style={styles.addReminderText} onPress={() => this.setAddReminderModalVisible(true)}>Add
-          Reminder</Button>
+        {deleteReminderModalVisible
+          ? <DeleteReminderModal
+            handleDeleteReminder={this.handleDeleteReminder}
+            modalSuccessTextVisible={modalSuccessTextVisible}
+            setModalVisible={() => this.setDeleteReminderModalVisible()}
+            animationType="fade"
+            transparent={false}
+            onRequestClose={() => this.setDeleteReminderModalVisible()}
+            savedDates={items}>
+          </DeleteReminderModal>
+          : null}
+
+        <View style={styles.inner}>
+          {this.state.deleteItemSuccess === true ? <Text style={styles.appText}>{this.state.deleteItemSuccessText}</Text> : null}
+          <Button theme={theme}
+                  onPress={() => this.setAddEditReminderModalVisible(true)}>
+            Add Reminder
+          </Button>
+
+          <Button theme={theme}
+                  onPress={() => this.editAgendaItem()}>
+            Edit Reminder
+          </Button>
+          <Button theme={theme}
+                  onPress={() => this.setDeleteReminderModalVisible(true)}
+                  mode='contained'
+                  color={'red'}
+                  labelStyle={styles.buttonTextColour}>
+            Delete Reminder
+          </Button>
+        </View>
       </View>
     );
   }

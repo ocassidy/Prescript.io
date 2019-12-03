@@ -14,17 +14,26 @@ import CustomTheme from './components/themes/CustomTheme';
 import Reminders from './components/Reminders/Reminders'
 import {DrawerNavigatorContent} from "./components/common/DrawerNavigatorContent";
 import Prescriptions from "./components/Prescriptions/Prescriptions";
+import Camera from "./components/Camera"
 
 const DrawerNavigator = createDrawerNavigator(
   {
     Profile: {
       screen: Profile,
+      title: 'Profile'
     },
     Reminders: {
       screen: Reminders,
+      title: 'Reminders'
     },
     Prescriptions: {
       screen: Prescriptions,
+    },
+    Camera: {
+      screen: Camera,
+      navigationOptions: {
+        header: null
+      }
     },
   },
   {
@@ -60,40 +69,23 @@ const AuthSwitch = createSwitchNavigator(
   }
 );
 
-const AppStack = createStackNavigator(
+const RootStack = createStackNavigator(
   {
-    Profile: {
+    AuthStack: {
+      screen:AuthSwitch,
+      navigationOptions: {
+        header: null
+      }
+    },
+    DrawerNavigator: {
       screen: DrawerNavigator,
       navigationOptions: ({navigation}) => ({
         headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
       })
-    },
-    Reminders: {
-      screen: Reminders,
-      navigationOptions: ({navigation}) => ({
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
-      })
-    },
-    Prescriptions: {
-      screen: Prescriptions,
-      navigationOptions: ({navigation}) => ({
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
-      })
-    },
-  },
-  {
-    initialRouteName: "Profile",
-  }
-);
-
-const RootStack = createStackNavigator(
-  {
-    AuthStack: AuthSwitch,
-    AppStack: AppStack
+    }
   },
   {
     initialRouteName: "AuthStack",
-    headerMode: 'none'
   }
 );
 

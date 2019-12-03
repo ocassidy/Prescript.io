@@ -76,7 +76,6 @@ export default styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     marginBottom: 10,
-    marginRight: 'auto'
   },
   buttonTextColour: {
     color: 'white'
@@ -138,5 +137,18 @@ export default styles = StyleSheet.create({
   },
   deleteReminderModalInnerScroll: {
     alignItems: 'center',
+  },
+  prescriptionListSection: {
+    padding: 20,
+  },
+  prescriptionListAccordion: {
+    borderWidth: 1,
+    borderRadius: 20,
+    marginLeft:10,
+    marginRight: 10
+  },
+  prescriptionListAccordionButton: {
+    marginLeft: 'auto',
+    marginRight: 'auto'
   }
 });

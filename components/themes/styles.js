@@ -145,10 +145,21 @@ export default styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     marginLeft:10,
-    marginRight: 10
+    marginRight: 10,
+    marginBottom: 15
   },
-  prescriptionListAccordionButton: {
-    marginLeft: 'auto',
-    marginRight: 'auto'
-  }
+  prescriptionListAccordionInner: {
+    borderWidth: 1,
+    borderRadius: 20,
+    marginLeft:10,
+    marginRight: 10,
+    marginBottom: 15,
+  },
+  prescriptionListAccordionButtons: {
+    alignItems: 'flex-start',
+    marginBottom: 5,
+  },
+  prescriptionListAccordionAddImageButton: {
+    alignItems: 'center',
+  },
 });

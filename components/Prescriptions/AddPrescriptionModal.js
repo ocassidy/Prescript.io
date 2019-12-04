@@ -58,7 +58,7 @@ const PendingView = () => (
 );
 
 YellowBox.ignoreWarnings(['Setting a timer']);
-export default class AddInfoModal extends Component {
+export default class AddPrescriptionModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -106,16 +106,6 @@ export default class AddInfoModal extends Component {
                     <View>
                       <TextInput
                         theme={theme}
-                        placeholder="Dosage e.g. 250ml...."
-                        onChangeText={handleChange('dosage')}
-                        onBlur={handleBlur('dosage')}
-                        value={values.dosage}
-                        mode='outlined'
-                      />
-                      <ErrorMessage errorValue={touched.dosage && errors.dosage}/>
-
-                      <TextInput
-                        theme={theme}
                         placeholder="Medicine"
                         onChangeText={handleChange('medicine')}
                         onBlur={handleBlur('medicine')}
@@ -123,6 +113,16 @@ export default class AddInfoModal extends Component {
                         mode='outlined'
                       />
                       <ErrorMessage errorValue={touched.medicine && errors.medicine}/>
+
+                      <TextInput
+                        theme={theme}
+                        placeholder="Dosage e.g. 250ml...."
+                        onChangeText={handleChange('dosage')}
+                        onBlur={handleBlur('dosage')}
+                        value={values.dosage}
+                        mode='outlined'
+                      />
+                      <ErrorMessage errorValue={touched.dosage && errors.dosage}/>
 
                       <TextInput
                         theme={theme}

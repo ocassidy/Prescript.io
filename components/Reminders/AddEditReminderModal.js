@@ -101,6 +101,7 @@ export default class AddEditReminderModal extends Component {
                       <Divider/>
                       <Button theme={theme}
                               style={styles.buttonSpacing}
+                              mode='outlined'
                               onPress={this.showDateTimePicker}>Choose Date</Button>
 
                       <TextInput

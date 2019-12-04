@@ -47,20 +47,18 @@ export default class Reminders extends Component {
     let user = firebase.auth().currentUser;
     let {medicine} = values;
     if (pickedDate !== '' && pickedDate !== null && medicine) {
-      let reminders = {
-        [pickedDate]: [values],
-      };
-      let data = {
-        reminders
-      };
-
       db.collection('users')
         .doc(user.uid)
-        .set(data, {merge: true})
+        .set({
+          reminders: {
+            [pickedDate]: [values],
+          }
+        }, {merge: true})
         .then(response => {
           this.setState({
             modalSuccessTextVisible: true
           });
+          this.loadItems();
           console.log('successful add of reminder(s) on user id', user.uid)
         })
         .catch(error => console.log('unsuccessful add of add of reminder(s) to user', user.uid, 'with', error));
@@ -70,7 +68,6 @@ export default class Reminders extends Component {
         errorMessage: 'Invalid Data'
       });
     }
-    this.loadItems();
   };
 
   rowHasChanged(r1, r2) {
@@ -109,11 +106,10 @@ export default class Reminders extends Component {
           deleteItemSuccessText: 'Successfully deleted item'
         });
         this.setDeleteReminderModalVisible(false);
+        this.loadItems();
         console.log('successful delete of reminder', date, 'on user id', user.uid)
       })
       .catch(error => console.log('unsuccessful delete of reminder', date, 'on user id', user.uid, 'with', error));
-
-    this.loadItems();
   };
 
   editAgendaItem = () => {
@@ -180,7 +176,8 @@ export default class Reminders extends Component {
           : null}
 
         <View style={styles.inner}>
-          {this.state.deleteItemSuccess === true ? <Text style={styles.appText}>{this.state.deleteItemSuccessText}</Text> : null}
+          {this.state.deleteItemSuccess === true ?
+            <Text style={styles.appText}>{this.state.deleteItemSuccessText}</Text> : null}
           <Button theme={theme}
                   onPress={() => this.setAddEditReminderModalVisible(true)}>
             Add Reminder

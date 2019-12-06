@@ -19,7 +19,7 @@ import ChangePasswordModal from "./ChangePasswordModal";
 import DeleteAccountModal from "./DeleteAccountModal";
 import {db} from "../../firebaseConfig";
 
-YellowBox.ignoreWarnings(['Setting a timer']);
+console.disableYellowBox = true;
 export default class Profile extends Component {
   constructor(props) {
     super(props);

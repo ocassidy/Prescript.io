@@ -18,6 +18,7 @@ import Camera from "./components/camera/Camera"
 import Gallery from "./components/camera/Gallery";
 import styles from "./components/themes/styles";
 
+console.disableYellowBox = true;
 const AppStack = createStackNavigator(
   {
     Profile: {
@@ -43,9 +44,9 @@ const AppStack = createStackNavigator(
     },
     Camera: {
       screen: Camera,
-      navigationOptions: {
-        header: null
-      }
+      navigationOptions: ({navigation}) => ({
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
     },
     Gallery: {
       screen: Gallery,

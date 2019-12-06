@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Alert, ScrollView, View, YellowBox} from 'react-native'
-import {Button, Divider, List, Modal, Portal, Text} from 'react-native-paper';
+import {Alert, ScrollView, View, Image} from 'react-native'
+import {Button, Divider, List, Text} from 'react-native-paper';
 import styles from "../themes/styles";
 import * as firebase from "firebase";
 import {db} from "../../firebaseConfig";
@@ -8,7 +8,7 @@ import AddPrescriptionModal from "./AddPrescriptionModal";
 import {ColorPicker} from 'react-native-color-picker'
 import uuidv4 from 'uuid/v4'
 
-YellowBox.ignoreWarnings(['Setting a timer']);
+console.disableYellowBox = true;
 export default class Reminders extends Component {
   constructor(props) {
     super(props);
@@ -22,7 +22,8 @@ export default class Reminders extends Component {
       colorPickerVisible: false,
       selectedColor: null,
       selectedIdToEdit: null,
-      colourChangeSuccess: false
+      colourChangeSuccess: false,
+      returnFromCamera: false
     };
   }
 
@@ -218,6 +219,9 @@ export default class Reminders extends Component {
       colorPickerVisible
     } = this.state;
     let prescriptionsList;
+    if (this.props.navigation.getParam('returnFromCamera')) {
+      this.getPrescriptions()
+    }
     if (prescriptions && Object.keys(prescriptions).length) {
       prescriptionsList = Object.values(prescriptions).map((prescription, index) => {
         return (
@@ -228,11 +232,12 @@ export default class Reminders extends Component {
             style={[styles.prescriptionListAccordion, {borderColor: prescription.borderColour}]}
             left={props => <List.Icon {...props} icon="pill"/>}
           >
-            {/*<Image*/}
-            {/*  style={{width: 50, height: 50}}*/}
-            {/*  source={{uri: 'https://facebook.github.io/react-native/img/tiny_logo.png'}}*/}
-            {/*/>*/}
             <View style={[styles.prescriptionListAccordionInner, {borderColor: prescription.borderColour}]}>
+              {prescription.prescriptionImage
+                ? <Image style={{justifyContent: 'center', width: 250, height: 250, marginTop: 10}}
+                         source={{uri: prescription.prescriptionImage}}
+                />
+                : null}
               <List.Item theme={theme} style={styles.appText}
                          title={'Active: ' + prescription.active}/>
               <List.Item theme={theme} style={styles.appText}
@@ -247,7 +252,8 @@ export default class Reminders extends Component {
               <List.Item theme={theme} style={styles.appText}
                          title={'Provider: ' + prescription.providerName}/>
 
-              <Button theme={theme} onPress={() => navigation.navigate('Camera')}
+              <Button theme={theme}
+                      onPress={() => navigation.navigate('Camera', {prescriptionId: prescription.prescriptionId})}
                       style={styles.prescriptionListAccordionButtons}
                       mode="contained"
                       labelStyle={styles.buttonTextColour}>

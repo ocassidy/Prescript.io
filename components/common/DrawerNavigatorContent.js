@@ -40,7 +40,8 @@ export class DrawerNavigatorContent extends Component {
         <Button icon='logout'
                 style={styles.drawerButtonSpacing}
                 onPress={() => signOut(navigation, 'You have logged out.')}>
-          Logout</Button>
+          Logout
+        </Button>
       </SafeAreaView>
     );
   }

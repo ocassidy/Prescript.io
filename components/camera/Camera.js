@@ -3,10 +3,14 @@ import {Text, View, TouchableOpacity, BackHandler, StyleSheet} from 'react-nativ
 import * as Permissions from 'expo-permissions';
 import {Camera} from 'expo-camera';
 import {
+  Foundation,
   Ionicons,
   MaterialIcons,
   Octicons
 } from '@expo/vector-icons';
+import * as firebase from "firebase";
+import * as FileSystem from "expo-file-system";
+import Gallery from "./Gallery";
 
 const flashModeOrder = {
   off: 'on',
@@ -38,6 +42,7 @@ export default class takePictureCamera extends Component {
       pictureSize: undefined,
       pictureSizes: [],
       pictureSizeId: 0,
+      showGallery: false,
     };
   }
 
@@ -45,6 +50,9 @@ export default class takePictureCamera extends Component {
     BackHandler.addEventListener('hardwareBackPress', () => false);
     const {status} = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({hasCameraPermission: status === 'granted'});
+    FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'photos').catch(e => {
+      console.log(e, 'Directory exists');
+    });
   };
 
   componentWillUnmount = () => {
@@ -94,6 +102,14 @@ export default class takePictureCamera extends Component {
     }
   };
 
+  onPictureSaved = async photo => {
+    await FileSystem.moveAsync({
+      from: photo.uri,
+      to: `${FileSystem.documentDirectory}photos/${Date.now()}.png`,
+    });
+    this.setState({newPhotos: true});
+  };
+
   handleMountError = ({message}) => console.error(message);
 
   renderNoPermissions = () => {
@@ -107,14 +123,20 @@ export default class takePictureCamera extends Component {
   };
 
   renderTopBar = () => {
+    const {navigation} = this.props;
     return (
-      <View
-        style={styles.topBar}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.toggleButton} onPress={() => navigation.navigate('Prescriptions')}>
+          <MaterialIcons name='arrow-back' size={32} color="white"/>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFlash}>
           <MaterialIcons name={flashIcons[this.state.flash]} size={32} color="white"/>
         </TouchableOpacity>
         <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFocus}>
           <Text style={[styles.autoFocusLabel, {color: this.state.autoFocus === 'on' ? "white" : "#6b6b6b"}]}>AF</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFacing}>
+          <Ionicons name="ios-reverse-camera" size={32} color="white"/>
         </TouchableOpacity>
       </View>
     )
@@ -135,8 +157,11 @@ export default class takePictureCamera extends Component {
             <Ionicons name="ios-radio-button-on" size={70} color="white"/>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.toggleFacing}>
-          <Ionicons name="ios-reverse-camera" size={32} color="white"/>
+        <TouchableOpacity style={styles.bottomButton} onPress={() => this.props.navigation.navigate('Gallery')}>
+          <View>
+            <Foundation name="thumbnails" size={30} color="white"/>
+            {this.state.newPhotos && <View style={styles.newPhotosDot}/>}
+          </View>
         </TouchableOpacity>
       </View>
     )

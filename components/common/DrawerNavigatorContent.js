@@ -12,23 +12,29 @@ export class DrawerNavigatorContent extends Component {
       <SafeAreaView style={styles.container} forceInset={{top: "always", horizontal: "never"}}>
         <ScrollView>
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Profile', {title: 'Profile'})}
+                  onPress={() => this.props.navigation.navigate('Profile')}
                   style={styles.drawerButtonSpacing}
                   icon='account'>
             Profile
           </Button>
 
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Reminders', {title: 'Reminders'})}
+                  onPress={() => this.props.navigation.navigate('Reminders')}
                   style={styles.drawerButtonSpacing}
                   icon='calendar'>
             Reminders
           </Button>
           <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Prescriptions', {title: 'Reminders'})}
+                  onPress={() => this.props.navigation.navigate('Prescriptions')}
                   style={styles.drawerButtonSpacing}
                   icon='pill'>
             Prescriptions
+          </Button>
+          <Button theme={theme}
+                  onPress={() => this.props.navigation.navigate('Gallery')}
+                  style={styles.drawerButtonSpacing}
+                  icon='image'>
+            Gallery
           </Button>
         </ScrollView>
         <Button icon='logout'

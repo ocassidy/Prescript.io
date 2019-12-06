@@ -6,7 +6,7 @@ import styles from "../themes/styles";
 import moment from "moment";
 import * as firebase from "firebase";
 import {db} from "../../firebaseConfig";
-import AddEditReminderModal from "./AddEditReminderModal";
+import AddReminderModal from "./AddReminderModal";
 import DeleteReminderModal from "./DeleteReminderModal";
 
 YellowBox.ignoreWarnings(['Setting a timer']);
@@ -43,7 +43,7 @@ export default class Reminders extends Component {
       });
   };
 
-  handleAddEditReminder = (values, pickedDate) => {
+  handleAddReminder = (values, pickedDate) => {
     let user = firebase.auth().currentUser;
     let {medicine} = values;
     if (pickedDate !== '' && pickedDate !== null && medicine) {
@@ -112,10 +112,6 @@ export default class Reminders extends Component {
       .catch(error => console.log('unsuccessful delete of reminder', date, 'on user id', user.uid, 'with', error));
   };
 
-  editAgendaItem = () => {
-
-  };
-
   renderItem(item) {
     const {medicine, medicine2, medicine3, reminderNote} = item;
     const {theme} = this.props;
@@ -153,14 +149,14 @@ export default class Reminders extends Component {
         />
 
         {addEditReminderModalVisible
-          ? <AddEditReminderModal
-            handleAddEditReminder={this.handleAddEditReminder}
+          ? <AddReminderModal
+            handleAddReminder={this.handleAddReminder}
             modalSuccessTextVisible={modalSuccessTextVisible}
             setModalVisible={() => this.setAddEditReminderModalVisible()}
             animationType="fade"
             transparent={false}
             onRequestClose={() => this.setAddEditReminderModalVisible()}>
-          </AddEditReminderModal>
+          </AddReminderModal>
           : null}
 
         {deleteReminderModalVisible

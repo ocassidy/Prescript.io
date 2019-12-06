@@ -142,24 +142,22 @@ export default styles = StyleSheet.create({
     padding: 20,
   },
   prescriptionListAccordion: {
-    borderWidth: 1,
-    borderRadius: 20,
+    borderWidth: 5,
+    borderRadius: 25,
     marginLeft:10,
     marginRight: 10,
-    marginBottom: 15
+    marginBottom: 15,
   },
   prescriptionListAccordionInner: {
-    borderWidth: 1,
-    borderRadius: 20,
+    borderWidth: 5,
+    borderRadius: 25,
     marginLeft:10,
     marginRight: 10,
     marginBottom: 15,
   },
   prescriptionListAccordionButtons: {
     alignItems: 'flex-start',
-    marginBottom: 5,
-  },
-  prescriptionListAccordionAddImageButton: {
-    alignItems: 'center',
+    marginBottom: 10,
+    marginRight: 25
   },
 });

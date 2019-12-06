@@ -38,7 +38,7 @@ const ModalSchema = Yup.object().shape({
 
 
 YellowBox.ignoreWarnings(['Setting a timer']);
-export default class AddEditReminderModal extends Component {
+export default class AddReminderModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -65,7 +65,7 @@ export default class AddEditReminderModal extends Component {
   };
 
   render() {
-    const {theme, setModalVisible, visible, modalSuccessTextVisible, handleAddEditReminder} = this.props;
+    const {theme, setModalVisible, visible, modalSuccessTextVisible, handleAddReminder} = this.props;
     const {pickedDate} = this.state;
     return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
@@ -83,7 +83,7 @@ export default class AddEditReminderModal extends Component {
                 <Text style={styles.modalText}>Please use the choose date button to choose a date.</Text>
 
                 <Formik initialValues={{medicine: '', medicine2: '', medicine3: '', reminderNote: ''}}
-                        onSubmit={values => handleAddEditReminder(values, pickedDate)}
+                        onSubmit={values => handleAddReminder(values, pickedDate)}
                         validationSchema={ModalSchema}>
                   {({
                       handleChange,

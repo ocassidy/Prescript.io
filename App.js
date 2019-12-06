@@ -2,10 +2,10 @@ import React, {Component} from 'react';
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack'
 import {createDrawerNavigator} from 'react-navigation-drawer';
-import {View, Image, YellowBox} from 'react-native'
+import {View, Image, YellowBox, Text, TouchableOpacity} from 'react-native'
 import {AppLoading, SplashScreen,} from 'expo';
 import {Asset} from "expo-asset";
-import {Provider as PaperProvider, IconButton} from 'react-native-paper';
+import {Provider as PaperProvider, IconButton, Button} from 'react-native-paper';
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Profile from "./components/Profile/Profile";
@@ -14,20 +14,32 @@ import CustomTheme from './components/themes/CustomTheme';
 import Reminders from './components/Reminders/Reminders'
 import {DrawerNavigatorContent} from "./components/common/DrawerNavigatorContent";
 import Prescriptions from "./components/Prescriptions/Prescriptions";
-import Camera from "./components/Camera"
+import Camera from "./components/camera/Camera"
+import Gallery from "./components/camera/Gallery";
+import styles from "./components/themes/styles";
 
-const DrawerNavigator = createDrawerNavigator(
+const AppStack = createStackNavigator(
   {
     Profile: {
       screen: Profile,
-      title: 'Profile'
+      navigationOptions: ({navigation}) => ({
+        title: 'Profile',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
     },
     Reminders: {
       screen: Reminders,
-      title: 'Reminders'
+      navigationOptions: ({navigation}) => ({
+        title: 'Reminders',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
     },
     Prescriptions: {
       screen: Prescriptions,
+      navigationOptions: ({navigation}) => ({
+        title: 'Prescriptions',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
+      })
     },
     Camera: {
       screen: Camera,
@@ -35,12 +47,27 @@ const DrawerNavigator = createDrawerNavigator(
         header: null
       }
     },
+    Gallery: {
+      screen: Gallery,
+      navigationOptions: ({navigation}) => ({
+        title: 'Gallery',
+        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>,
+      })
+    },
+  },
+);
+
+const DrawerNavigator = createDrawerNavigator(
+  {
+    Drawer: {
+      screen: AppStack,
+    },
   },
   {
     drawerWidth: 175,
     drawerPosition: 'left',
-    initialRouteName: 'Profile',
-    contentComponent: DrawerNavigatorContent
+    contentComponent: DrawerNavigatorContent,
+    initialRouteName: 'Drawer',
   });
 
 const AuthSwitch = createSwitchNavigator(
@@ -72,16 +99,16 @@ const AuthSwitch = createSwitchNavigator(
 const RootStack = createStackNavigator(
   {
     AuthStack: {
-      screen:AuthSwitch,
+      screen: AuthSwitch,
       navigationOptions: {
         header: null
       }
     },
     DrawerNavigator: {
       screen: DrawerNavigator,
-      navigationOptions: ({navigation}) => ({
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
-      })
+      navigationOptions: {
+        header: null
+      }
     }
   },
   {

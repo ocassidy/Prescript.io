@@ -6,6 +6,7 @@ import styles from '../themes/styles'
 import {signOut} from "./utils";
 
 console.disableYellowBox = true;
+
 export class DrawerNavigatorContent extends Component {
   render() {
     const {theme, navigation} = this.props;
@@ -30,12 +31,6 @@ export class DrawerNavigatorContent extends Component {
                   style={styles.drawerButtonSpacing}
                   icon='pill'>
             Prescriptions
-          </Button>
-          <Button theme={theme}
-                  onPress={() => this.props.navigation.navigate('Gallery')}
-                  style={styles.drawerButtonSpacing}
-                  icon='image'>
-            Gallery
           </Button>
         </ScrollView>
         <Button icon='logout'

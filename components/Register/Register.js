@@ -1,21 +1,10 @@
 import React, {Component} from 'react';
-import {
-  TouchableWithoutFeedback,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  YellowBox,
-} from 'react-native';
+import {TouchableWithoutFeedback, View, KeyboardAvoidingView, Platform, Keyboard,} from 'react-native';
 import firebase from "../../firebaseConfig.js";
 import {Formik} from "formik";
 import * as Yup from "yup";
 import {ErrorMessage} from "../common/ErrorMessage";
-import {
-  Button,
-  Text,
-  TextInput
-} from 'react-native-paper';
+import {Button, Text, TextInput} from 'react-native-paper';
 import styles from '../themes/styles';
 import {sendRegistrationEmail} from "../common/utils";
 import {db} from "../../firebaseConfig";
@@ -40,7 +29,7 @@ const RegisterSchema = Yup.object().shape({
     .required('Required'),
 });
 
-YellowBox.ignoreWarnings(['Setting a timer']);
+console.disableYellowBox = true;
 export default class Register extends Component {
   constructor(props) {
     super(props);

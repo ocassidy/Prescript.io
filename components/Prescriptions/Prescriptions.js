@@ -23,12 +23,25 @@ export default class Reminders extends Component {
       selectedColor: null,
       selectedIdToEdit: null,
       colourChangeSuccess: false,
-      returnFromCamera: false
+      returnFromCamera: false,
+      user: null,
+      isLoading: true
     };
   }
 
-  componentDidMount = () => {
-    this.getPrescriptions();
+  componentDidMount = async () => {
+    await this.setState({
+      user: firebase.auth().currentUser
+    });
+
+    if(this.state.user !== null && this.state.user !== undefined) {
+      this.getPrescriptions();
+    }
+    else{
+      this.setState({
+        isLoading: true
+      })
+    }
   };
 
   setAddPrescriptionModalVisible = (visible) => {
@@ -40,7 +53,7 @@ export default class Reminders extends Component {
   };
 
   handleAddPrescription = (values) => {
-    let user = firebase.auth().currentUser;
+    const {uid} = this.state.user;
     const {medicine, dosage, type, usageDuration, prescribingDoctor, providerName} = values;
     let prescriptionId = uuidv4();
 
@@ -57,7 +70,7 @@ export default class Reminders extends Component {
     };
 
     db.collection('users')
-      .doc(user.uid)
+      .doc(uid)
       .set({
         prescriptions: {
           [prescriptionId]: prescription
@@ -68,16 +81,16 @@ export default class Reminders extends Component {
           modalSuccessTextVisible: true
         });
         this.getPrescriptions();
-        console.log('successful add of address/phoneNumber to user on id', user.uid)
+        console.log('successful add of address/phoneNumber to user on id', uid)
       })
-      .catch(error => console.log('unsuccessful add of address/phoneNumber to user', user.uid, error));
+      .catch(error => console.log('unsuccessful add of address/phoneNumber to user', uid, error));
   };
 
   handleDeletePrescription = (prescriptionId) => {
-    let user = firebase.auth().currentUser;
+    const {uid} = this.state.user;
 
     db.collection('users')
-      .doc(user.uid)
+      .doc(uid)
       .set({
         'prescriptions': {
           [prescriptionId]: firebase.firestore.FieldValue.delete()
@@ -89,9 +102,9 @@ export default class Reminders extends Component {
           deleteItemSuccessText: 'Successfully deleted item'
         });
         this.getPrescriptions();
-        console.log('successful delete of prescription', prescriptionId, 'on user id', user.uid)
+        console.log('successful delete of prescription', prescriptionId, 'on user id', uid)
       })
-      .catch(error => console.log('unsuccessful delete of prescription', prescriptionId, 'on user id', user.uid, 'with', error));
+      .catch(error => console.log('unsuccessful delete of prescription', prescriptionId, 'on user id', uid, 'with', error));
   };
 
   deletePrescription = (prescriptionId) => {
@@ -107,13 +120,14 @@ export default class Reminders extends Component {
   };
 
   getPrescriptions = () => {
-    let user = firebase.auth().currentUser;
+    const {uid} = this.state.user;
     db.collection('users')
-      .doc(user.uid)
+      .doc(uid)
       .get()
       .then(document => {
         this.setState({
-          prescriptions: document.get('prescriptions')
+          prescriptions: document.get('prescriptions'),
+          isLoading: false
         })
       })
       .catch(error => {
@@ -132,13 +146,13 @@ export default class Reminders extends Component {
         {cancelable: false}
       )
     }
-    let user = firebase.auth().currentUser;
+    const {uid} = this.state.user
     let prescription = {
       borderColour: this.state.selectedColor,
     };
 
     db.collection('users')
-      .doc(user.uid)
+      .doc(uid)
       .set({
         prescriptions: {
           [prescriptionId]: prescription
@@ -149,9 +163,9 @@ export default class Reminders extends Component {
           colourChangeSuccess: true
         });
         this.getPrescriptions();
-        console.log('successful edit of color to user on id', user.uid)
+        console.log('successful edit of color to user on id', uid)
       })
-      .catch(error => console.log('unsuccessful edit of color to user', user.uid, error));
+      .catch(error => console.log('unsuccessful edit of color to user', uid, error));
   };
 
   renderPicker = () => {
@@ -216,7 +230,8 @@ export default class Reminders extends Component {
       modalSuccessTextVisible,
       isEditMode,
       prescriptionForEdit,
-      colorPickerVisible
+      colorPickerVisible,
+      isLoading
     } = this.state;
     let prescriptionsList;
     if (this.props.navigation.getParam('returnFromCamera')) {
@@ -225,12 +240,12 @@ export default class Reminders extends Component {
     if (prescriptions && Object.keys(prescriptions).length) {
       prescriptionsList = Object.values(prescriptions).map((prescription, index) => {
         return (
-          <List.Accordion
-            title={prescription.medicine}
-            key={index}
-            theme={theme}
-            style={[styles.prescriptionListAccordion, {borderColor: prescription.borderColour}]}
-            left={props => <List.Icon {...props} icon="pill"/>}
+          <List.Accordion id='prescriptionListItem'
+                          title={prescription.medicine}
+                          key={index}
+                          theme={theme}
+                          style={[styles.prescriptionListAccordion, {borderColor: prescription.borderColour}]}
+                          left={props => <List.Icon {...props} icon="pill"/>}
           >
             <View style={[styles.prescriptionListAccordionInner, {borderColor: prescription.borderColour}]}>
               {prescription.prescriptionImage
@@ -257,7 +272,7 @@ export default class Reminders extends Component {
                       style={styles.prescriptionListAccordionButtons}
                       mode="contained"
                       labelStyle={styles.buttonTextColour}>
-                Add Image
+                {prescription.prescriptionImage ? 'Change Image' : 'Add Image'}
               </Button>
 
               <Button theme={theme} onPress={() => this.setColorPickerVisible(true, prescription.prescriptionId)}
@@ -286,11 +301,13 @@ export default class Reminders extends Component {
           ? <View style={styles.container}>
             {prescriptions && Object.keys(prescriptions).length
               ? null
-              : <Text style={styles.appText}>You currently have no prescriptions added.</Text>}
+              : <Text id='prescriptionNoDataText'
+                      style={styles.appText}>You currently have no prescriptions added.
+              </Text>}
 
-            {prescriptions && Object.keys(prescriptions).length
-              ? <ScrollView>
-                <List.Section theme={theme} style={styles.prescriptionListSection}>
+            {prescriptions && Object.keys(prescriptions).length && !isLoading
+              ? <ScrollView id='prescriptionScrollView'>
+                <List.Section theme={theme} style={styles.prescriptionListSection} id='prescriptionListSection'>
                   <List.Subheader style={styles.appText}>Your Prescriptions</List.Subheader>
                   {prescriptionsList}
                 </List.Section>
@@ -310,7 +327,8 @@ export default class Reminders extends Component {
 
             <View style={styles.inner}>
               {deleteItemSuccess === true ? <Text style={styles.appText}>{deleteItemSuccessText}</Text> : null}
-              <Button theme={theme}
+              <Button id='addPrescriptionButton'
+                      theme={theme}
                       onPress={() => this.setAddPrescriptionModalVisible(true)}>
                 Add Prescription
               </Button>

@@ -4,8 +4,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
   YellowBox
@@ -28,8 +26,8 @@ const ResetPasswordSchema = Yup.object().shape({
     .required('Please enter a registered email'),
 });
 
-YellowBox.ignoreWarnings(['Setting a timer']);
-export default class Login extends Component {
+console.disableYellowBox = true;
+export default class ResetPassword extends Component {
   constructor(props) {
     super(props);
     this.state = {

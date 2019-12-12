@@ -8,16 +8,13 @@ export default styles = StyleSheet.create({
   },
   inner: {
     padding: 20,
-    textAlign: 'center',
-    textAlignVertical: "center",
+    justifyContent: 'center',
   },
   spinner: {
     marginTop: 350,
     marginBottom: 15,
     padding: 20,
-    textAlign: 'center',
     justifyContent: 'center',
-    textAlignVertical: "center",
     alignItems: 'center'
   },
   smallSpinner: {

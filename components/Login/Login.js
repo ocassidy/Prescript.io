@@ -19,8 +19,6 @@ import {
 import {NavigationActions, StackActions} from 'react-navigation'
 import IsLoadingSpinner from "../common/IsLoadingSpinner";
 import styles from '../themes/styles';
-import {Notifications} from 'expo';
-import * as Permissions from 'expo-permissions';
 
 const LoginSchema = Yup.object().shape({
   password: Yup.string()
@@ -46,7 +44,11 @@ export default class Login extends Component {
     }
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
+    this.checkIsUserLoggedIn();
+  };
+
+  checkIsUserLoggedIn = () => {
     this.authFirebaseListener = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.setState({
@@ -64,9 +66,9 @@ export default class Login extends Component {
     });
   };
 
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     this.authFirebaseListener && this.authFirebaseListener()
-  }
+  };
 
   resetStack = () => {
     this.props
@@ -90,45 +92,12 @@ export default class Login extends Component {
         this.setState({
           error: false,
         });
-        // this.registerUserForPushNotifications(user)
-        //   .then(r => this.props.navigation.navigate('Profile'))
-        //   .catch(error => console.log(error));
         this.props.navigation.navigate('Profile');
         this.props.navigation.dispatch(this.resetStack);
       })
       .catch((error) => {
         this.setState({errorMessage: error.message, error: true})
       });
-  };
-
-  registerUserForPushNotifications = async (user) => {
-    const {status: existingStatus} = await Permissions.getAsync(
-      Permissions.NOTIFICATIONS
-    );
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const {status} = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      return;
-    }
-
-    let token = await Notifications.getExpoPushTokenAsync();
-
-    firebase
-      .database()
-      .ref('users/' + user.user.uid)
-      .update({
-        expoToken: token
-      })
-      .then(response => {
-        console.log('registerUserForPushNotifications update response ', response);
-      }).catch((error) => {
-      console.log('registerUserForPushNotifications update error ', error.message);
-    });
   };
 
   render() {
@@ -160,6 +129,7 @@ export default class Login extends Component {
                   }) => (
                   <View>
                     <TextInput
+                      id='loginEmailInput'
                       theme={theme}
                       placeholder="Email"
                       onChangeText={handleChange('email')}
@@ -171,6 +141,7 @@ export default class Login extends Component {
                     <ErrorMessage errorValue={touched.email && errors.email}/>
 
                     <TextInput
+                      id='loginPasswordInput'
                       theme={theme}
                       placeholder="Password"
                       onChangeText={handleChange('password')}
@@ -187,7 +158,8 @@ export default class Login extends Component {
                     <Button theme={theme}
                             onPress={handleSubmit}
                             mode="contained"
-                            labelStyle={styles.buttonTextColour}>
+                            labelStyle={styles.buttonTextColour}
+                            id='loginSubmitButton'>
                       Login
                     </Button>
                     {error ? <ErrorMessage errorValue={error.message}/> : undefined}
@@ -195,11 +167,17 @@ export default class Login extends Component {
                 )}
               </Formik>
 
-              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigation.navigate('Register')}>
+              <Button id='navigateRegisterButton'
+                      style={styles.buttonSpacing}
+                      theme={theme}
+                      onPress={() => navigation.navigate('Register')}>
                 Don't have an account? Register Here
               </Button>
 
-              <Button style={styles.buttonSpacing} theme={theme} onPress={() => navigation.navigate('ResetPassword')}>
+              <Button id='navigateResetPasswordButton'
+                      style={styles.buttonSpacing}
+                      theme={theme}
+                      onPress={() => navigation.navigate('ResetPassword')}>
                 Forgot Password?
               </Button>
 

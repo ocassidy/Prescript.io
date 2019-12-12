@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {View, YellowBox} from 'react-native'
-import {Button, Checkbox, Text} from 'react-native-paper';
+import {View} from 'react-native'
+import {Button, Text} from 'react-native-paper';
 import {Agenda} from 'react-native-calendars';
 import styles from "../themes/styles";
 import moment from "moment";
@@ -9,7 +9,7 @@ import {db} from "../../firebaseConfig";
 import AddReminderModal from "./AddReminderModal";
 import DeleteReminderModal from "./DeleteReminderModal";
 
-YellowBox.ignoreWarnings(['Setting a timer']);
+console.disableYellowBox = true;
 export default class Reminders extends Component {
   constructor(props) {
     super(props);
@@ -179,10 +179,6 @@ export default class Reminders extends Component {
             Add Reminder
           </Button>
 
-          <Button theme={theme}
-                  onPress={() => this.editAgendaItem()}>
-            Edit Reminder
-          </Button>
           <Button theme={theme}
                   onPress={() => this.setDeleteReminderModalVisible(true)}
                   mode='contained'

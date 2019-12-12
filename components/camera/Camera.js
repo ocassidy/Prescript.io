@@ -1,8 +1,5 @@
 import React, {Component} from 'react';
-import {
-  Image,
-  View,
-} from 'react-native';
+import {Image, View,} from 'react-native';
 import {Button, Text} from 'react-native-paper'
 import * as firebase from 'firebase';
 import * as ImagePicker from "expo-image-picker";

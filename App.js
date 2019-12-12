@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
-import {createStackNavigator} from 'react-navigation-stack'
+import {createStackNavigator} from 'react-navigation-stack';
 import {createDrawerNavigator} from 'react-navigation-drawer';
-import {View, Image, YellowBox, Text, TouchableOpacity} from 'react-native'
+import {View, Image} from 'react-native'
 import {AppLoading, SplashScreen,} from 'expo';
 import {Asset} from "expo-asset";
-import {Provider as PaperProvider, IconButton, Button} from 'react-native-paper';
+import {Provider as PaperProvider, IconButton} from 'react-native-paper';
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Profile from "./components/Profile/Profile";
@@ -14,9 +14,7 @@ import CustomTheme from './components/themes/CustomTheme';
 import Reminders from './components/Reminders/Reminders'
 import {DrawerNavigatorContent} from "./components/common/DrawerNavigatorContent";
 import Prescriptions from "./components/Prescriptions/Prescriptions";
-import Camera from "./components/camera/Camera"
-import Gallery from "./components/camera/Gallery";
-import styles from "./components/themes/styles";
+import Camera from "./components/camera/Camera";
 
 console.disableYellowBox = true;
 const AppStack = createStackNavigator(
@@ -46,13 +44,6 @@ const AppStack = createStackNavigator(
       screen: Camera,
       navigationOptions: ({navigation}) => ({
         headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>
-      })
-    },
-    Gallery: {
-      screen: Gallery,
-      navigationOptions: ({navigation}) => ({
-        title: 'Gallery',
-        headerLeft: <IconButton icon='menu' color='black' size={38} onPress={() => navigation.toggleDrawer()}/>,
       })
     },
   },
@@ -123,7 +114,6 @@ const theme = {
   ...CustomTheme,
 };
 
-YellowBox.ignoreWarnings(['Setting a timer for a long']);
 export default class App extends Component {
   constructor(props) {
     super(props);

@@ -1,15 +1,6 @@
 import React, {Component} from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  View,
-  YellowBox,
-  BackHandler, Alert
-} from 'react-native'
-import {
-  Text,
-  Button,
-} from 'react-native-paper';
+import {KeyboardAvoidingView, Platform, View, BackHandler, Alert} from 'react-native'
+import {Text, Button,} from 'react-native-paper';
 import AddInfoModal from './AddInfoModal'
 import firebase from "../../firebaseConfig.js";
 import styles from '../themes/styles';
@@ -187,15 +178,20 @@ export default class Profile extends Component {
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         {user
           ? <View style={styles.inner}>
-            {user.displayName ? <Text style={styles.appText} theme={theme}>Hi {user.displayName}!</Text> : null}
-            <Text style={styles.appText} theme={theme}>Welcome to your profile.</Text>
-            <Text style={styles.appText} theme={theme}>Your details:</Text>
-            <Text style={styles.appText} theme={theme}>Your current email
-              is {user.email ? user.email : undefined}</Text>
-            <Text style={styles.appText} theme={theme}>Your
-              email {user.emailVerified ? 'is' : 'is not'} verified.</Text>
+            {user.displayName
+              ? <Text id='profileDisplayName' style={styles.appText} theme={theme}>Hi {user.displayName}!</Text>
+              : null}
+            <Text id='profileHeaderText' style={styles.appText} theme={theme}>Welcome to your profile.</Text>
+            <Text id='profileDetailText' style={styles.appText} theme={theme}>Your details:</Text>
+            <Text id='profileEmailText' style={styles.appText} theme={theme}>
+              Your current email is {user.email ? user.email : undefined}
+            </Text>
+            <Text id='profileEmailVerifiedText' style={styles.appText} theme={theme}>
+              Your email {user.emailVerified ? 'is' : 'is not'} verified.
+            </Text>
             {!user.emailVerified
-              ? <Button style={styles.buttonSpacing}
+              ? <Button id='profileVerifyEmailButton'
+                        style={styles.buttonSpacing}
                         theme={theme}
                         onPress={() => {
                           sendRegistrationEmail(user)
@@ -205,16 +201,17 @@ export default class Profile extends Component {
               </Button>
               : null}
 
-            <Text style={styles.appText} theme={theme}>
+            <Text id='profileAddressText' style={styles.appText} theme={theme}>
               Your address {address ? 'is' : 'is not set'} {address ? address : null}.
             </Text>
 
-            <Text style={styles.appText} theme={theme}>
+            <Text id='profilePhoneNumberText' style={styles.appText} theme={theme}>
               Your Phone Number {phoneNumber ? 'is' : 'is not set'} {phoneNumber ? phoneNumber : null}.
             </Text>
 
             {!address || !phoneNumber ?
-              <Button style={styles.buttonSpacing}
+              <Button id='profileAddInfoButton'
+                      style={styles.buttonSpacing}
                       theme={theme}
                       onPress={() => {
                         this.setAddInfoModalVisible(true)
@@ -258,7 +255,8 @@ export default class Profile extends Component {
               </DeleteAccountModal>
               : undefined}
 
-            <Button style={styles.buttonSpacing}
+            <Button id='profileChangePasswordButton'
+                    style={styles.buttonSpacing}
                     theme={theme}
                     onPress={() => this.setChangePasswordModalVisible(true)}
                     mode='outlined'>
@@ -266,7 +264,8 @@ export default class Profile extends Component {
             </Button>
 
             <View>
-              <Button style={styles.buttonSpacing} theme={theme}
+              <Button id='profileLogoutButton'
+                      style={styles.buttonSpacing} theme={theme}
                       onPress={() => signOut(navigation, 'You have logged out.')}
                       mode='contained'
                       labelStyle={styles.buttonTextColour}>
@@ -274,7 +273,8 @@ export default class Profile extends Component {
               </Button>
             </View>
 
-            <Button style={styles.buttonSpacing}
+            <Button id='profileDeleteAccountButton'
+                    style={styles.buttonSpacing}
                     theme={theme}
                     onPress={() => this.setDeleteAccountModalVisible(true)}
                     mode="contained"

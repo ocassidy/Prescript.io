@@ -1,6 +1,7 @@
 import firebase from "../../firebaseConfig";
 import {Alert} from "react-native";
 
+console.disableYellowBox = true;
 export function sendRegistrationEmail (user) {
   user.sendEmailVerification()
     .then(response => {
@@ -24,6 +25,7 @@ export function sendRegistrationEmail (user) {
   });
 }
 
+console.disableYellowBox = true;
 export function signOut(navigation, signOutMessage) {
   firebase.auth().signOut().then(() => {
     navigation.navigate('Login', {signOutMessage: signOutMessage})

@@ -3,6 +3,7 @@ import {ActivityIndicator, Text} from "react-native-paper";
 import {View} from "react-native";
 import React from "react";
 
+console.disableYellowBox = true;
 export default function IsLoadingSpinner(props) {
   const {isSmallSpinner} = props;
   return (

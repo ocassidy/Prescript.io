@@ -5,6 +5,7 @@ import {Button} from "react-native-paper";
 import styles from '../themes/styles'
 import {signOut} from "./utils";
 
+console.disableYellowBox = true;
 export class DrawerNavigatorContent extends Component {
   render() {
     const {theme, navigation} = this.props;

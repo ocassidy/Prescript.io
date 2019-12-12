@@ -1,16 +1,6 @@
 import React, {Component} from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  View,
-  Modal,
-  YellowBox
-} from 'react-native'
-import {
-  Text,
-  TextInput,
-  Button
-} from 'react-native-paper';
+import {KeyboardAvoidingView, Platform, View, Modal} from 'react-native'
+import {Text, TextInput, Button} from 'react-native-paper';
 import {Formik} from "formik";
 import * as Yup from 'yup';
 import {ErrorMessage} from "../common/ErrorMessage";
@@ -31,8 +21,7 @@ const ModalSchema = Yup.object().shape({
     .required('Required'),
 });
 
-
-YellowBox.ignoreWarnings(['Setting a timer']);
+console.disableYellowBox = true;
 export default class AddInfoModal extends Component {
   constructor(props) {
     super(props);
